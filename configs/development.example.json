@@ -1,0 +1,28 @@
+{
+  "server": {
+    "port": "8080",
+    "environment": "development"
+  },
+  "logger": {
+    "level": "info",
+    "addSource": true
+  },
+  "database": {
+    "uri": "postgres://user:pass@localhost:5432/devdb?sslmode=disable"
+  },
+  "redis": {
+    "connectionString": "redis://localhost:6379",
+    "expire": 60
+  },
+  "mqtt": {
+    "host": "tcp://localhost",
+    "port": "1883",
+    "username": "your_mqtt_user"
+  },
+  "jwt": {
+    "secret": "dev_secret_key",
+    "audience": "your_audience",
+    "issuer": "your_issuer",
+    "expire": 60
+  }
+}
