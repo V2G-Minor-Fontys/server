@@ -51,10 +51,11 @@ func (s *Server) MountHandlers() error {
 			r.Post("/register", middleware.ErrHandler(s.auth.RegisterHandler))
 			r.Post("/login", middleware.ErrHandler(s.auth.LoginHandler))
 
-			r.Route("/token", func(r chi.Router) {
-				r.Post("/refresh", middleware.ErrHandler(s.auth.RefreshTokenHandler))
-				r.Delete("/revoke", middleware.ErrHandler(s.auth.RevokeTokenHandler))
-			})
+			r.With(middleware.AuthVerifier(s.cfg.Jwt)).
+				Route("/token", func(r chi.Router) {
+					r.Post("/refresh", middleware.ErrHandler(s.auth.RefreshTokenHandler))
+					r.Delete("/revoke", middleware.ErrHandler(s.auth.RevokeTokenHandler))
+				})
 		})
 	})
 

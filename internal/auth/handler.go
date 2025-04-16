@@ -141,7 +141,7 @@ func (h *Handler) LoginHandler(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	httpx.SetRefreshToken(w, &rt)
-	httpx.ResponseWithJSON(w, http.StatusCreated, AuthenticationResponse{
+	httpx.ResponseWithJSON(w, http.StatusOK, AuthenticationResponse{
 		ID:          identity.ID,
 		AccessToken: at,
 	})
@@ -177,7 +177,7 @@ func (h *Handler) RefreshTokenHandler(w http.ResponseWriter, r *http.Request) er
 	}
 
 	httpx.SetRefreshToken(w, &rt)
-	httpx.ResponseWithJSON(w, http.StatusCreated, AuthenticationResponse{
+	httpx.ResponseWithJSON(w, http.StatusOK, AuthenticationResponse{
 		ID:          identity.ID,
 		AccessToken: at,
 	})

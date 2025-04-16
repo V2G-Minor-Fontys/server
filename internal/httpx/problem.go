@@ -8,9 +8,10 @@ import (
 )
 
 const (
-	NotFoundType   = "https://datatracker.ietf.org/doc/html/rfc7231#section-6.5.4"
-	BadRequestType = "https://datatracker.ietf.org/doc/html/rfc7231#section-6.5.1"
-	InternalType   = "https://datatracker.ietf.org/doc/html/rfc7231#section-6.6.1"
+	UnauthorizedType = "https://datatracker.ietf.org/doc/html/rfc7235#section-3.1"
+	NotFoundType     = "https://datatracker.ietf.org/doc/html/rfc7231#section-6.5.4"
+	BadRequestType   = "https://datatracker.ietf.org/doc/html/rfc7231#section-6.5.1"
+	InternalType     = "https://datatracker.ietf.org/doc/html/rfc7231#section-6.6.1"
 )
 
 type Problem struct {
@@ -54,6 +55,17 @@ func newProblem(status int, title, detail, instance, typ string, err error) *Pro
 		Instance: instance,
 		err:      err,
 	}
+}
+
+func Unauthorized(detail, instance string) *Problem {
+	return newProblem(
+		http.StatusUnauthorized,
+		"Unauthorized",
+		detail,
+		instance,
+		UnauthorizedType,
+		nil,
+	)
 }
 
 func NotFound(detail, instance string) *Problem {
