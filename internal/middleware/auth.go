@@ -16,14 +16,14 @@ func AuthVerifier(cfg *config.Jwt) func(http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			authHeader := r.Header.Get("Authorization")
 			if authHeader == "" || !strings.HasPrefix(authHeader, "Bearer ") {
-				httpx.ProblemResponseWithJSON(w, httpx.Unauthorized("Missing or invalid Authorization header", r.RequestURI))
+				httpx.ProblemResponseWithJSON(w, httpx.Unauthorized(r.Context(), "Missing or invalid Authorization header"))
 				return
 			}
 
 			tokenStr := strings.TrimPrefix(authHeader, "Bearer ")
 			claims, err := jwt.VerifyAccessToken(tokenStr, cfg)
 			if err != nil {
-				httpx.ProblemResponseWithJSON(w, httpx.Unauthorized("Invalid or expired token", r.RequestURI))
+				httpx.ProblemResponseWithJSON(w, httpx.Unauthorized(r.Context(), "Invalid or expired token"))
 				return
 			}
 

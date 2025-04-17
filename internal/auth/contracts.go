@@ -30,7 +30,20 @@ type LoginRequest struct {
 	Password string `json:"password,omitempty"`
 }
 
+type AuthenticationResult struct {
+	ID           uuid.UUID                `json:"id,omitempty"`
+	AccessToken  *jwt.AccessToken         `json:"accessToken"`
+	RefreshToken *repository.RefreshToken `json:"refreshToken"`
+}
+
 type AuthenticationResponse struct {
 	ID          uuid.UUID        `json:"id,omitempty"`
 	AccessToken *jwt.AccessToken `json:"accessToken"`
+}
+
+func (a *AuthenticationResult) ToAuthenticationResponse() *AuthenticationResponse {
+	return &AuthenticationResponse{
+		ID:          a.ID,
+		AccessToken: a.AccessToken,
+	}
 }

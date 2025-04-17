@@ -18,7 +18,7 @@ func ErrHandler(h ErrHandlerFunc) http.HandlerFunc {
 		err := h(rw, r)
 		if err != nil {
 			if !errors.As(err, &errResponse) {
-				errResponse = httpx.InternalErr("An unexpected error occurred on the server while processing your request. Please try again later.", r.RequestURI, err)
+				errResponse = httpx.InternalErr(r.Context(), "An unexpected error occurred on the server while processing your request. Please try again later.", err)
 			}
 
 			if err = errResponse.Unwrap(); err != nil {
