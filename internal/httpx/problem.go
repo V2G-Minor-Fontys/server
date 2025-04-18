@@ -1,16 +1,20 @@
 package httpx
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
+	chiMiddleware "github.com/go-chi/chi/v5/middleware"
 	"log/slog"
 	"net/http"
 )
 
 const (
-	NotFoundType   = "https://datatracker.ietf.org/doc/html/rfc7231#section-6.5.4"
-	BadRequestType = "https://datatracker.ietf.org/doc/html/rfc7231#section-6.5.1"
-	InternalType   = "https://datatracker.ietf.org/doc/html/rfc7231#section-6.6.1"
+	UnauthorizedType = "https://datatracker.ietf.org/doc/html/rfc7235#section-3.1"
+	NotFoundType     = "https://datatracker.ietf.org/doc/html/rfc7231#section-6.5.4"
+	ConflictType     = "https://datatracker.ietf.org/doc/html/rfc7231#section-6.5.8"
+	BadRequestType   = "https://datatracker.ietf.org/doc/html/rfc7231#section-6.5.1"
+	InternalType     = "https://datatracker.ietf.org/doc/html/rfc7231#section-6.6.1"
 )
 
 type Problem struct {
@@ -45,78 +49,67 @@ func ProblemResponseWithJSON(w http.ResponseWriter, problem *Problem) {
 	}
 }
 
-func newProblem(status int, title, detail, instance, typ string, err error) *Problem {
+func newProblem(ctx context.Context, status int, title, detail, typ string, err error) *Problem {
 	return &Problem{
 		Type:     typ,
 		Title:    title,
 		Status:   status,
 		Detail:   detail,
-		Instance: instance,
+		Instance: chiMiddleware.GetReqID(ctx),
 		err:      err,
 	}
 }
 
-func NotFound(detail, instance string) *Problem {
+func Unauthorized(ctx context.Context, detail string) *Problem {
 	return newProblem(
+		ctx,
+		http.StatusUnauthorized,
+		"Unauthorized",
+		detail,
+		UnauthorizedType,
+		nil,
+	)
+}
+
+func NotFound(ctx context.Context, detail string) *Problem {
+	return newProblem(
+		ctx,
 		http.StatusNotFound,
 		"Resource Not Found",
 		detail,
-		instance,
 		NotFoundType,
 		nil,
 	)
 }
 
-func NotFoundErr(detail, instance string, err error) *Problem {
+func Conflict(ctx context.Context, detail string) *Problem {
 	return newProblem(
-		http.StatusNotFound,
-		"Resource Not Found",
+		ctx,
+		http.StatusConflict,
+		"Conflict",
 		detail,
-		instance,
-		NotFoundType,
-		err,
+		ConflictType,
+		nil,
 	)
 }
 
-func BadRequest(detail, instance string) *Problem {
+func BadRequest(ctx context.Context, detail string) *Problem {
 	return newProblem(
+		ctx,
 		http.StatusBadRequest,
 		"Bad Request",
 		detail,
-		instance,
 		BadRequestType,
 		nil,
 	)
 }
 
-func BadRequestErr(detail, instance string, err error) *Problem {
+func InternalErr(ctx context.Context, detail string, err error) *Problem {
 	return newProblem(
-		http.StatusBadRequest,
-		"Bad Request",
-		detail,
-		instance,
-		BadRequestType,
-		err,
-	)
-}
-
-func Internal(detail, instance string) *Problem {
-	return newProblem(
+		ctx,
 		http.StatusInternalServerError,
 		"Internal Server Error",
 		detail,
-		instance,
-		InternalType,
-		nil,
-	)
-}
-
-func InternalErr(detail, instance string, err error) *Problem {
-	return newProblem(
-		http.StatusInternalServerError,
-		"Internal Server Error",
-		detail,
-		instance,
 		InternalType,
 		err,
 	)

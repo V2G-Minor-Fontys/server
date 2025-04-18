@@ -3,8 +3,10 @@ package main
 import (
 	"context"
 	"github.com/V2G-Minor-Fontys/server/internal/config"
+	"github.com/V2G-Minor-Fontys/server/internal/repository"
 	"github.com/V2G-Minor-Fontys/server/internal/router"
 	"github.com/V2G-Minor-Fontys/server/pkg/logger"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"log/slog"
 	"os"
 	"os/signal"
@@ -21,7 +23,13 @@ func main() {
 	logger.Init(cfg.Server.Environment, cfg.Logger)
 	ctx, serverStopCtx := context.WithCancel(context.Background())
 
-	srv := router.NewServer(cfg)
+	conn, err := pgxpool.New(ctx, cfg.Database.Uri)
+	if err != nil {
+		panic(err)
+	}
+
+	repo := repository.New(conn)
+	srv := router.NewServer(cfg, conn, repo)
 	if err = srv.MountHandlers(); err != nil {
 		panic(err)
 	}
