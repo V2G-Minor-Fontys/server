@@ -147,7 +147,7 @@ func (s *Service) RefreshToken(ctx context.Context, token string) (*Authenticati
 
 	identity, err := s.queries.GetIdentityById(ctx, rt.IdentityID)
 	if err != nil {
-		return nil, httpx.BadRequest(ctx, "Identity attached to this refresh token is not longer exists")
+		return nil, httpx.BadRequest(ctx, "Identity attached to this refresh token no longer exists")
 	}
 
 	at, err := jwt.GenerateAccessToken(identity.ID.String(), s.cfg)
