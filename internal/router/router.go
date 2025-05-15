@@ -4,16 +4,18 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
+	"net/http"
+
 	"github.com/V2G-Minor-Fontys/server/internal/auth"
 	"github.com/V2G-Minor-Fontys/server/internal/config"
 	"github.com/V2G-Minor-Fontys/server/internal/middleware"
 	"github.com/V2G-Minor-Fontys/server/internal/repository"
 	"github.com/V2G-Minor-Fontys/server/internal/system"
+	"github.com/V2G-Minor-Fontys/server/internal/user"
 	"github.com/go-chi/chi/v5"
 	chiMiddleware "github.com/go-chi/chi/v5/middleware"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"log/slog"
-	"net/http"
 )
 
 type Server struct {
@@ -21,12 +23,14 @@ type Server struct {
 	cfg        *config.Config
 	httpServer *http.Server
 	auth       *auth.Handler
+	user       *user.Handler
 }
 
 func NewServer(cfg *config.Config, pool *pgxpool.Pool, queries *repository.Queries) *Server {
 	srv := &Server{
 		cfg:  cfg,
 		auth: auth.NewHandler(cfg.Jwt, pool, queries),
+		user: user.NewHandler(cfg.Jwt, pool, queries),
 	}
 
 	srv.httpServer = &http.Server{
@@ -56,6 +60,10 @@ func (s *Server) MountHandlers() error {
 					r.Post("/refresh", middleware.ErrHandler(s.auth.RefreshTokenHandler))
 					r.Delete("/revoke", middleware.ErrHandler(s.auth.RevokeTokenHandler))
 				})
+		})
+		r.Route("/user", func(r chi.Router) {
+			r.Get("/{id}", middleware.ErrHandler(s.user.GetUserHandler))
+			r.Delete("/{id}", middleware.ErrHandler(s.user.DeleteUserHandler))
 		})
 	})
 
