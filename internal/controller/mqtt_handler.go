@@ -6,11 +6,11 @@ import (
 )
 
 func (h *Handler) MountMqttMessageHandlers() {
-	h.mqttService.RegisterControllerTelemetrySubscriber(h.addControllerTelemetryMessageHandle)
+	h.mqtt.RegisterControllerTelemetrySubscriber(h.addControllerTelemetryMessageHandle)
 }
 
 func (h *Handler) addControllerTelemetryMessageHandle(msg *mqtt.AddControllerTelemetryMessage) error {
-	return h.svc.AddControllerTelemetry(context.Background(), AddControllerTelemetryRequest{
+	return h.svc.AddControllerTelemetry(context.Background(), &AddControllerTelemetryRequest{
 		ControllerID:  msg.ControllerID,
 		TimeStamp:     msg.TimeStamp,
 		OutputPower:   int32(msg.OutputPower),

@@ -6,13 +6,13 @@ import (
 )
 
 type RegisterControllerRequest struct {
-	SerialNumber    string `json:"serialNumber"`
+	CpuID           string `json:"cpuId"`
 	FirmwareVersion string `json:"firmwareVersion"`
 }
 
 type PairUserToControllerRequest struct {
-	UserId       uuid.UUID `json:"userId"`
-	SerialNumber string    `json:"serialNumber"`
+	UserId uuid.UUID `json:"userId"`
+	CpuID  string    `json:"cpuId"`
 }
 
 type AddControllerTelemetryRequest struct {
@@ -31,7 +31,7 @@ type UpdateControllerSettingsRequest struct {
 
 type Response struct {
 	ID              uuid.UUID         `json:"id"`
-	SerialNumber    string            `json:"serialNumber"`
+	CpuID           string            `json:"cpuId"`
 	FirmwareVersion string            `json:"firmwareVersion"`
 	Settings        *SettingsResponse `json:"settings"`
 }

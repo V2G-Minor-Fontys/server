@@ -16,13 +16,13 @@ import (
 )
 
 type Service interface {
-	RegisterController(ctx context.Context, req RegisterControllerRequest) (*Controller, error)
-	PairUserToController(ctx context.Context, req PairUserToControllerRequest) error
-	GetControllerByID(ctx context.Context, id uuid.UUID) (*Controller, error)
+	RegisterController(ctx context.Context, req *RegisterControllerRequest) (*Controller, error)
+	PairUserToController(ctx context.Context, req *PairUserToControllerRequest) error
 	GetControllerByUserId(ctx context.Context, id uuid.UUID) (*Controller, error)
+	GetControllerByCpuId(ctx context.Context, cpuId string) (*Controller, error)
 	GetControllerTelemetryById(ctx context.Context, id uuid.UUID) ([]*Telemetry, error)
-	AddControllerTelemetry(ctx context.Context, req AddControllerTelemetryRequest) error
-	UpdateControllerSettings(ctx context.Context, req UpdateControllerSettingsRequest) error
+	AddControllerTelemetry(ctx context.Context, req *AddControllerTelemetryRequest) error
+	UpdateControllerSettings(ctx context.Context, req *UpdateControllerSettingsRequest) error
 }
 
 type ServiceImpl struct {
@@ -34,7 +34,7 @@ func NewService(db *pgxpool.Pool, queries *repository.Queries) *ServiceImpl {
 	return &ServiceImpl{db: db, queries: queries}
 }
 
-func (s *ServiceImpl) RegisterController(ctx context.Context, req RegisterControllerRequest) (*Controller, error) {
+func (s *ServiceImpl) RegisterController(ctx context.Context, req *RegisterControllerRequest) (*Controller, error) {
 	tx, err := s.db.Begin(ctx)
 	if err != nil {
 		return nil, httpx.InternalErr(ctx, "Failed to begin transaction", err)
@@ -49,7 +49,7 @@ func (s *ServiceImpl) RegisterController(ctx context.Context, req RegisterContro
 	qtx := s.queries.WithTx(tx)
 	controllerParams := repository.AddControllerParams{
 		ID:              uuid.New(),
-		SerialNumber:    req.SerialNumber,
+		CpuID:           req.CpuID,
 		FirmwareVersion: req.FirmwareVersion,
 	}
 
@@ -78,7 +78,7 @@ func (s *ServiceImpl) RegisterController(ctx context.Context, req RegisterContro
 
 	return &Controller{
 		ID:              controllerParams.ID,
-		SerialNumber:    controllerParams.SerialNumber,
+		CpuID:           controllerParams.CpuID,
 		FirmwareVersion: controllerParams.FirmwareVersion,
 		Settings: &Settings{
 			ID:            controllerParams.ID,
@@ -89,10 +89,10 @@ func (s *ServiceImpl) RegisterController(ctx context.Context, req RegisterContro
 	}, nil
 }
 
-func (s *ServiceImpl) PairUserToController(ctx context.Context, req PairUserToControllerRequest) error {
+func (s *ServiceImpl) PairUserToController(ctx context.Context, req *PairUserToControllerRequest) error {
 	if err := s.queries.PairUserToController(ctx, repository.PairUserToControllerParams{
-		SerialNumber: req.SerialNumber,
-		UserID:       repository.GuidToPgUUID(req.UserId),
+		CpuID:  req.CpuID,
+		UserID: repository.GuidToPgUUID(req.UserId),
 	}); err != nil {
 		return httpx.InternalErr(ctx, "Could not pair the user to controller", err)
 	}
@@ -100,15 +100,15 @@ func (s *ServiceImpl) PairUserToController(ctx context.Context, req PairUserToCo
 	return nil
 }
 
-func (s *ServiceImpl) GetControllerByID(ctx context.Context, id uuid.UUID) (*Controller, error) {
-	controllerRow, err := s.queries.GetControllerById(ctx, id)
+func (s *ServiceImpl) GetControllerByCpuId(ctx context.Context, cpuId string) (*Controller, error) {
+	controllerRow, err := s.queries.GetControllerByCpuId(ctx, cpuId)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, httpx.NotFound(ctx, "Controller not found")
 	}
 
 	return &Controller{
 		ID:              controllerRow.ID,
-		SerialNumber:    controllerRow.SerialNumber,
+		CpuID:           controllerRow.CpuID,
 		FirmwareVersion: controllerRow.FirmwareVersion,
 		Settings:        mapDatabaseSettingsToSettings(&controllerRow.ControllerSetting),
 	}, nil
@@ -135,13 +135,13 @@ func (s *ServiceImpl) GetControllerByUserId(ctx context.Context, id uuid.UUID) (
 
 	return &Controller{
 		ID:              controllerRow.ID,
-		SerialNumber:    controllerRow.SerialNumber,
+		CpuID:           controllerRow.CpuID,
 		FirmwareVersion: controllerRow.FirmwareVersion,
 		Settings:        mapDatabaseSettingsToSettings(&controllerRow.ControllerSetting),
 	}, nil
 }
 
-func (s *ServiceImpl) AddControllerTelemetry(ctx context.Context, req AddControllerTelemetryRequest) error {
+func (s *ServiceImpl) AddControllerTelemetry(ctx context.Context, req *AddControllerTelemetryRequest) error {
 	if err := s.queries.AddControllerTelemetry(ctx, repository.AddControllerTelemetryParams{
 		ID:            uuid.New(),
 		ControllerID:  repository.GuidToPgUUID(req.ControllerID),
@@ -158,7 +158,7 @@ func (s *ServiceImpl) AddControllerTelemetry(ctx context.Context, req AddControl
 	return nil
 }
 
-func (s *ServiceImpl) UpdateControllerSettings(ctx context.Context, req UpdateControllerSettingsRequest) error {
+func (s *ServiceImpl) UpdateControllerSettings(ctx context.Context, req *UpdateControllerSettingsRequest) error {
 	if err := s.queries.UpdateControllerSettings(ctx, repository.UpdateControllerSettingsParams{
 		ID:            req.ID,
 		AutoStart:     req.AutoStart,

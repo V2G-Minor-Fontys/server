@@ -13,7 +13,7 @@ import (
 
 type Controller struct {
 	ID              uuid.UUID   `db:"id" json:"id"`
-	SerialNumber    string      `db:"serial_number" json:"serialNumber"`
+	CpuID           string      `db:"cpu_id" json:"cpuId"`
 	UserID          pgtype.UUID `db:"user_id" json:"userId"`
 	FirmwareVersion string      `db:"firmware_version" json:"firmwareVersion"`
 	CreatedAt       time.Time   `db:"created_at" json:"createdAt"`

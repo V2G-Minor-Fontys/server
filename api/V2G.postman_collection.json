@@ -41,7 +41,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"username\": \"hello noob\",\r\n    \"password\": \"Hello1234!\"\r\n}",
+							"raw": "{\r\n    \"username\": \"mqsr\",\r\n    \"password\": \"Hello1234!\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -94,7 +94,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"username\": \"hello noob\",\r\n    \"password\": \"Hello1234!\"\r\n}",
+							"raw": "{\r\n    \"username\": \"mqsr\",\r\n    \"password\": \"Hello1234!\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -113,7 +113,58 @@
 							]
 						}
 					},
-					"response": []
+					"response": [
+						{
+							"name": "Login",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"username\": \"mqsr\",\r\n    \"password\": \"Hello1234!\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{api-uri}}/api/auth/login",
+									"host": [
+										"{{api-uri}}"
+									],
+									"path": [
+										"api",
+										"auth",
+										"login"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Set-Cookie",
+									"value": "refresh-token=552057407a00f5c42354f8f664a83b6742ccb3205493beec3a9ac4ce1f940ca9; Path=/; Expires=Sun, 15 Jun 2025 08:34:55 GMT; HttpOnly; SameSite=Lax"
+								},
+								{
+									"key": "Date",
+									"value": "Sat, 17 May 2025 09:55:48 GMT"
+								},
+								{
+									"key": "Content-Length",
+									"value": "362"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"id\": \"5ab063fa-02c0-4e58-b905-9b3282d5af41\",\n    \"accessToken\": {\n        \"value\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJ5b3VyX2lzc3VlciIsInN1YiI6IjVhYjA2M2ZhLTAyYzAtNGU1OC1iOTA1LTliMzI4MmQ1YWY0MSIsImF1ZCI6WyJ5b3VyX2F1ZGllbmNlIl0sImV4cCI6MTc0NzQ3OTM0OCwiaWF0IjoxNzQ3NDc1NzQ4fQ.s13tvnzumaNPYbiS7yuCXqIeCEDMt0Bvpck4LN0xQQs\",\n        \"expiresAt\": \"2025-05-17T10:55:48.7025187Z\"\n    }\n}"
+						}
+					]
 				},
 				{
 					"name": "Refresh Token",
@@ -161,7 +212,50 @@
 							]
 						}
 					},
-					"response": []
+					"response": [
+						{
+							"name": "Refresh Token",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{api-uri}}/api/auth/token/refresh",
+									"host": [
+										"{{api-uri}}"
+									],
+									"path": [
+										"api",
+										"auth",
+										"token",
+										"refresh"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Set-Cookie",
+									"value": "refresh-token=552057407a00f5c42354f8f664a83b6742ccb3205493beec3a9ac4ce1f940ca9; Path=/; Expires=Sun, 15 Jun 2025 08:34:55 GMT; HttpOnly; SameSite=Lax"
+								},
+								{
+									"key": "Date",
+									"value": "Sat, 17 May 2025 09:56:17 GMT"
+								},
+								{
+									"key": "Content-Length",
+									"value": "362"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"id\": \"5ab063fa-02c0-4e58-b905-9b3282d5af41\",\n    \"accessToken\": {\n        \"value\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJ5b3VyX2lzc3VlciIsInN1YiI6IjVhYjA2M2ZhLTAyYzAtNGU1OC1iOTA1LTliMzI4MmQ1YWY0MSIsImF1ZCI6WyJ5b3VyX2F1ZGllbmNlIl0sImV4cCI6MTc0NzQ3OTM3NywiaWF0IjoxNzQ3NDc1Nzc3fQ.oTt_oNO2V5vGZPNV-3RBDCeQnqzqIU9SBG2UI8OkXyU\",\n        \"expiresAt\": \"2025-05-17T10:56:17.1131624Z\"\n    }\n}"
+						}
+					]
 				},
 				{
 					"name": "Revoke Refresh Token",
@@ -178,6 +272,735 @@
 								"auth",
 								"token",
 								"revoke"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Revoke Refresh Token",
+							"originalRequest": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{api-uri}}/api/auth/token/revoke",
+									"host": [
+										"{{api-uri}}"
+									],
+									"path": [
+										"api",
+										"auth",
+										"token",
+										"revoke"
+									]
+								}
+							},
+							"status": "No Content",
+							"code": 204,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Set-Cookie",
+									"value": "refresh-token=; Path=/; Max-Age=0; HttpOnly; SameSite=Lax"
+								},
+								{
+									"key": "Date",
+									"value": "Sat, 17 May 2025 09:56:22 GMT"
+								}
+							],
+							"cookie": [],
+							"body": null
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Controllers",
+			"item": [
+				{
+					"name": "Register",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code !== 201) {\r",
+									"    return;\r",
+									"}\r",
+									"\r",
+									"const response = pm.response.json();\r",
+									"const controllerId = response.id;\r",
+									"const cpuId = response.cpuId;\r",
+									"\r",
+									"pm.collectionVariables.set(\"controller-id\", controllerId);\r",
+									"pm.collectionVariables.set(\"cpu-id\", cpuId);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"firmwareVersion\": \"102BC\",\r\n    \"cpuId\": \"1234\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{api-uri}}/api/controllers/register",
+							"host": [
+								"{{api-uri}}"
+							],
+							"path": [
+								"api",
+								"controllers",
+								"register"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Register",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"firmwareVersion\": \"102BC\",\r\n    \"cpuId\": \"1234\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{api-uri}}/api/controllers/register",
+									"host": [
+										"{{api-uri}}"
+									],
+									"path": [
+										"api",
+										"controllers",
+										"register"
+									]
+								}
+							},
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Date",
+									"value": "Sat, 17 May 2025 15:42:11 GMT"
+								},
+								{
+									"key": "Content-Length",
+									"value": "134"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"id\": \"319352cf-b977-429a-9cec-7e6986da747b\",\n    \"cpuId\": \"1234\",\n    \"firmwareVersion\": \"102BC\",\n    \"settings\": {\n        \"autoStart\": true,\n        \"heartbeatRate\": 5\n    }\n}"
+						}
+					]
+				},
+				{
+					"name": "Pair User",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"cpuId\": \"1234\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{api-uri}}/api/users/{{user-id}}/controllers",
+							"host": [
+								"{{api-uri}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"{{user-id}}",
+								"controllers"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Pair User",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"cpuId\": \"1234\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{api-uri}}/api/users/{{user-id}}/controllers",
+									"host": [
+										"{{api-uri}}"
+									],
+									"path": [
+										"api",
+										"users",
+										"{{user-id}}",
+										"controllers"
+									]
+								}
+							},
+							"status": "No Content",
+							"code": 204,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Date",
+									"value": "Sat, 17 May 2025 13:10:18 GMT"
+								}
+							],
+							"cookie": [],
+							"body": null
+						}
+					]
+				},
+				{
+					"name": "Get User's Controllers",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code !== 200) {\r",
+									"    return;\r",
+									"}\r",
+									"\r",
+									"const response = pm.response.json();\r",
+									"const controllerId = response.id;\r",
+									"const cpuId = response.cpuId;\r",
+									"\r",
+									"pm.collectionVariables.set(\"controller-Id\", controllerId);\r",
+									"pm.collectionVariables.set(\"cpu-Id\", cpuId);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{api-uri}}/api/users/{{user-id}}/controllers",
+							"host": [
+								"{{api-uri}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"{{user-id}}",
+								"controllers"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Get User's Controller Response Example",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{api-uri}}/api/users/{{user-id}}/controllers",
+									"host": [
+										"{{api-uri}}"
+									],
+									"path": [
+										"api",
+										"users",
+										"{{user-id}}",
+										"controllers"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Date",
+									"value": "Thu, 15 May 2025 15:46:03 GMT"
+								},
+								{
+									"key": "Content-Length",
+									"value": "232"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"id\": \"d8a3d701-0b07-4865-a185-ba6a0b0a357c\",\n    \"serialNumber\": \"1234\",\n    \"firmwareVersion\": \"102BC\",\n    \"settings\": {\n        \"id\": \"d8a3d701-0b07-4865-a185-ba6a0b0a357c\",\n        \"autoStart\": true,\n        \"heartbeatRate\": 5,\n        \"updatedAt\": \"2025-05-15T17:39:19.346195+02:00\"\n    }\n}"
+						}
+					]
+				},
+				{
+					"name": "Update Settings",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"autoStart\": false,\r\n    \"Heartbeat\": 6\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{api-uri}}/api/users/{{user-id}}/controllers/{{controller-id}}/settings",
+							"host": [
+								"{{api-uri}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"{{user-id}}",
+								"controllers",
+								"{{controller-id}}",
+								"settings"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Update Settings",
+							"originalRequest": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"autoStart\": false,\r\n    \"Heartbeat\": 6\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{api-uri}}/api/users/{{user-id}}/controllers/{{controller-id}}/settings",
+									"host": [
+										"{{api-uri}}"
+									],
+									"path": [
+										"api",
+										"users",
+										"{{user-id}}",
+										"controllers",
+										"{{controller-id}}",
+										"settings"
+									]
+								}
+							},
+							"status": "No Content",
+							"code": 204,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Date",
+									"value": "Sat, 17 May 2025 15:44:20 GMT"
+								}
+							],
+							"cookie": [],
+							"body": null
+						}
+					]
+				},
+				{
+					"name": "Telemetry History",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{api-uri}}/api/users/{{user-id}}/controllers/{{controller-id}}/history",
+							"host": [
+								"{{api-uri}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"{{user-id}}",
+								"controllers",
+								"{{controller-id}}",
+								"history"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Telemetry History",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{api-uri}}/api/users/{{user-id}}/controllers/{{controller-id}}/history",
+									"host": [
+										"{{api-uri}}"
+									],
+									"path": [
+										"api",
+										"users",
+										"{{user-id}}",
+										"controllers",
+										"{{controller-id}}",
+										"history"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Date",
+									"value": "Sat, 17 May 2025 10:06:47 GMT"
+								},
+								{
+									"key": "Content-Length",
+									"value": "303"
+								}
+							],
+							"cookie": [],
+							"body": "[\n    {\n        \"controllerId\": \"1069abd1-5c73-40aa-b8ab-69a7803bc03b\",\n        \"timestamp\": \"2025-05-16T10:37:22.718766+02:00\",\n        \"outputPower\": 451,\n        \"soc\": 45,\n        \"evDischarging\": true\n    },\n    {\n        \"controllerId\": \"1069abd1-5c73-40aa-b8ab-69a7803bc03b\",\n        \"timestamp\": \"2025-05-17T11:58:13.067427+02:00\",\n        \"outputPower\": 415,\n        \"soc\": 45,\n        \"evDischarging\": true\n    }\n]"
+						}
+					]
+				},
+				{
+					"name": "Execute Action",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"action\": \"start_dischargin\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{api-uri}}/api/users/{{user-id}}/controllers/{{controller-id}}/actions",
+							"host": [
+								"{{api-uri}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"{{user-id}}",
+								"controllers",
+								"{{controller-id}}",
+								"actions"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Execute Action",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"action\": \"start_discharging\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{api-uri}}/api/users/{{user-id}}/controllers/{{controller-id}}/actions",
+									"host": [
+										"{{api-uri}}"
+									],
+									"path": [
+										"api",
+										"users",
+										"{{user-id}}",
+										"controllers",
+										"{{controller-id}}",
+										"actions"
+									]
+								}
+							},
+							"status": "No Content",
+							"code": 204,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Date",
+									"value": "Sat, 17 May 2025 09:56:45 GMT"
+								}
+							],
+							"cookie": [],
+							"body": null
+						}
+					]
+				},
+				{
+					"name": "Get By Id",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if  (pm.response.status != 200) {\r",
+									"    return;\r",
+									"}\r",
+									"\r",
+									"const response = pm.response.json();\r",
+									"const controllerId = response.id;\r",
+									"const cpuId = response.cpuId;\r",
+									"\r",
+									"pm.collectionVariables.set(\"controller-Iid\", controllerId);\r",
+									"pm.collectionVariables.set(\"cpu-Iid\", cpuId);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{api-uri}}/api/users/{{user-id}}/controllers/{{controller-id}}",
+							"host": [
+								"{{api-uri}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"{{user-id}}",
+								"controllers",
+								"{{controller-id}}"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Get By Id",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{api-uri}}/api/users/{{user-id}}/controllers",
+									"host": [
+										"{{api-uri}}"
+									],
+									"path": [
+										"api",
+										"users",
+										"{{user-id}}",
+										"controllers"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Date",
+									"value": "Sat, 17 May 2025 13:11:54 GMT"
+								},
+								{
+									"key": "Content-Length",
+									"value": "134"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"id\": \"7ac1a57e-ad44-40a6-ab2d-395fffea3c30\",\n    \"cpuId\": \"1234\",\n    \"firmwareVersion\": \"102BC\",\n    \"settings\": {\n        \"autoStart\": true,\n        \"heartbeatRate\": 5\n    }\n}"
+						}
+					]
+				},
+				{
+					"name": "Get By Cpu Id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{api-uri}}/api/controllers/{{cpu-id}}",
+							"host": [
+								"{{api-uri}}"
+							],
+							"path": [
+								"api",
+								"controllers",
+								"{{cpu-id}}"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "New Request",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{api-uri}}/api/controllers/{{cpu-id}}",
+									"host": [
+										"{{api-uri}}"
+									],
+									"path": [
+										"api",
+										"controllers",
+										"{{cpu-id}}"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Date",
+									"value": "Sat, 17 May 2025 15:44:05 GMT"
+								},
+								{
+									"key": "Content-Length",
+									"value": "134"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"id\": \"319352cf-b977-429a-9cec-7e6986da747b\",\n    \"cpuId\": \"1234\",\n    \"firmwareVersion\": \"102BC\",\n    \"settings\": {\n        \"autoStart\": true,\n        \"heartbeatRate\": 5\n    }\n}"
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Users",
+			"item": [
+				{
+					"name": "Get By Id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{api-uri}}/api/users/{{user-id}}",
+							"host": [
+								"{{api-uri}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"{{user-id}}"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Get By Id",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{api-uri}}/api/users/{{user-id}}",
+									"host": [
+										"{{api-uri}}"
+									],
+									"path": [
+										"api",
+										"users",
+										"{{user-id}}"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Date",
+									"value": "Sat, 17 May 2025 15:44:47 GMT"
+								},
+								{
+									"key": "Content-Length",
+									"value": "63"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"id\": \"5ab063fa-02c0-4e58-b905-9b3282d5af41\",\n    \"username\": \"mqsr\"\n}"
+						}
+					]
+				},
+				{
+					"name": "Delete By Id",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{api-uri}}/api/users/{{user-id}}",
+							"host": [
+								"{{api-uri}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"{{user-id}}"
 							]
 						}
 					},
@@ -256,6 +1079,23 @@
 			"key": "user-id",
 			"value": "0",
 			"type": "string"
+		},
+		{
+			"key": "controller-id",
+			"value": "0"
+		},
+		{
+			"key": "cpu-id",
+			"value": "0",
+			"type": "string"
+		},
+		{
+			"key": "controller-Id",
+			"value": ""
+		},
+		{
+			"key": "cpu-Id",
+			"value": ""
 		}
 	]
 }

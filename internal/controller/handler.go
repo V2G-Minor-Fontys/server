@@ -4,22 +4,20 @@ import (
 	"github.com/V2G-Minor-Fontys/server/internal/httpx"
 	"github.com/V2G-Minor-Fontys/server/internal/mqtt"
 	"github.com/V2G-Minor-Fontys/server/internal/repository"
-
+	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"net/http"
 )
 
 type Handler struct {
-	mqttService  *mqtt.Service
-	svc          Service
-	ShutdownMQTT func(timeoutMils uint)
+	mqtt *mqtt.Service
+	svc  Service
 }
 
 func NewHandler(mqttService *mqtt.Service, db *pgxpool.Pool, queries *repository.Queries) *Handler {
 	h := &Handler{
-		mqttService:  mqttService,
-		svc:          NewService(db, queries),
-		ShutdownMQTT: mqttService.Shutdown,
+		mqtt: mqttService,
+		svc:  NewService(db, queries),
 	}
 	return h
 }
@@ -30,7 +28,7 @@ func (h *Handler) RegisterControllerHandler(w http.ResponseWriter, r *http.Reque
 		return err
 	}
 
-	controller, err := h.svc.RegisterController(r.Context(), req)
+	controller, err := h.svc.RegisterController(r.Context(), &req)
 	if err != nil {
 		return err
 	}
@@ -40,7 +38,7 @@ func (h *Handler) RegisterControllerHandler(w http.ResponseWriter, r *http.Reque
 }
 
 func (h *Handler) PairUserToControllerHandler(w http.ResponseWriter, r *http.Request) error {
-	userID, err := httpx.ParseUUIDParam(r, "userID")
+	userID, err := httpx.ParseUUIDParam(r, "userId")
 	if err != nil {
 		return err
 	}
@@ -51,7 +49,7 @@ func (h *Handler) PairUserToControllerHandler(w http.ResponseWriter, r *http.Req
 	}
 
 	req.UserId = userID
-	if err := h.svc.PairUserToController(r.Context(), req); err != nil {
+	if err := h.svc.PairUserToController(r.Context(), &req); err != nil {
 		return err
 	}
 
@@ -59,13 +57,8 @@ func (h *Handler) PairUserToControllerHandler(w http.ResponseWriter, r *http.Req
 	return nil
 }
 
-func (h *Handler) GetControllerByIdHandler(w http.ResponseWriter, r *http.Request) error {
-	controllerID, err := httpx.ParseUUIDParam(r, "controllerId")
-	if err != nil {
-		return err
-	}
-
-	controller, err := h.svc.GetControllerByID(r.Context(), controllerID)
+func (h *Handler) GetControllerByCpuIdHandler(w http.ResponseWriter, r *http.Request) error {
+	controller, err := h.svc.GetControllerByCpuId(r.Context(), chi.URLParam(r, "cpuId"))
 	if err != nil {
 		return err
 	}
@@ -116,7 +109,15 @@ func (h *Handler) UpdateControllerSettingsHandler(w http.ResponseWriter, r *http
 	}
 
 	req.ID = controllerID
-	if err := h.svc.UpdateControllerSettings(r.Context(), req); err != nil {
+	if err := h.svc.UpdateControllerSettings(r.Context(), &req); err != nil {
+		return err
+	}
+
+	if err := h.mqtt.UpdateControllerSettings(r.Context(), mqtt.UpdateControllerSettings{
+		ControllerID: req.ID,
+		Heartbeat:    req.Heartbeat,
+		AutoStart:    req.AutoStart,
+	}); err != nil {
 		return err
 	}
 
@@ -136,10 +137,14 @@ func (h *Handler) ExecuteControllerActionHandler(w http.ResponseWriter, r *http.
 	}
 
 	req.ControllerID = controllerId
-	if err := h.mqttService.ExecuteControllerAction(r.Context(), req); err != nil {
+	if err := h.mqtt.ExecuteControllerAction(r.Context(), &req); err != nil {
 		return err
 	}
 
 	httpx.ResponseWithJSON(w, http.StatusNoContent, nil)
 	return nil
+}
+
+func (h *Handler) ShutdownMQTT(timeoutMils uint) {
+	h.mqtt.ShutdownMQTT(timeoutMils)
 }

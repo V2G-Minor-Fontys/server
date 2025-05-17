@@ -34,7 +34,7 @@ func mapSettingsToResponse(settings *Settings) *SettingsResponse {
 func mapControllerToResponse(c *Controller) *Response {
 	return &Response{
 		ID:              c.ID,
-		SerialNumber:    c.SerialNumber,
+		CpuID:           c.CpuID,
 		FirmwareVersion: c.FirmwareVersion,
 		Settings:        mapSettingsToResponse(c.Settings),
 	}

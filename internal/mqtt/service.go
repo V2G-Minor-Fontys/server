@@ -13,19 +13,35 @@ import (
 )
 
 type Service struct {
-	client   mqtt.Client
-	Shutdown func(timeoutMils uint)
+	client mqtt.Client
 }
 
 func NewService(client mqtt.Client) *Service {
 	return &Service{
-		client:   client,
-		Shutdown: client.Disconnect,
+		client: client,
 	}
 }
 
-func (h *Service) RegisterControllerTelemetrySubscriber(onControllerTelemetryReceived func(msg *AddControllerTelemetryMessage) error) {
-	h.client.Subscribe("v2g/controllers/telemetry", 0, func(client mqtt.Client, message mqtt.Message) {
+func (s *Service) publishMQTTMessage(ctx context.Context, topic string, payload any) error {
+	data, err := json.Marshal(payload)
+	if err != nil {
+		return httpx.InternalErr(ctx, "Failed to encode request payload", err)
+	}
+
+	token := s.client.Publish(topic, 0, false, data)
+	if !token.WaitTimeout(250 * time.Millisecond) {
+		return httpx.InternalErr(ctx, "Timeout occurred while publishing MQTT message", errors.New("MQTT server is not responding fast enough"))
+	}
+
+	if token.Error() != nil {
+		return httpx.InternalErr(ctx, "Failed to publish MQTT message", token.Error())
+	}
+
+	return nil
+}
+
+func (s *Service) RegisterControllerTelemetrySubscriber(onControllerTelemetryReceived func(msg *AddControllerTelemetryMessage) error) {
+	s.client.Subscribe("v2g/controller/telemetry", 0, func(client mqtt.Client, message mqtt.Message) {
 		defer message.Ack()
 		var msg AddControllerTelemetryMessage
 		payload := message.Payload()
@@ -51,26 +67,19 @@ func (h *Service) RegisterControllerTelemetrySubscriber(onControllerTelemetryRec
 	})
 }
 
-func (h *Service) ExecuteControllerAction(ctx context.Context, req ControllerActionRequest) error {
+func (s *Service) ExecuteControllerAction(ctx context.Context, req *ControllerActionRequest) error {
 	switch strings.ToLower(req.Action) {
 	case "start_discharging", "stop_discharging":
-		payload, err := json.Marshal(req)
-		if err != nil {
-			return httpx.InternalErr(ctx, "Failed to encode request payload", err)
-		}
-
-		token := h.client.Publish("v2g/controller/action", 0, false, payload)
-		if !token.WaitTimeout(250 * time.Millisecond) {
-			return httpx.InternalErr(ctx, "Timeout occurred while publishing MQTT message", errors.New("MQTT server is not responding fast enough"))
-		}
-
-		if token.Error() != nil {
-			return httpx.InternalErr(ctx, "Failed to publish MQTT message", token.Error())
-		}
-
-		return nil
-
+		return s.publishMQTTMessage(ctx, "v2g/controller/action", req)
 	default:
 		return httpx.BadRequest(ctx, fmt.Sprintf("Unsupported action: %s. Currently Supported: %s, %s", req.Action, "start_discharging", "stop_discharging"))
 	}
+}
+
+func (s *Service) UpdateControllerSettings(ctx context.Context, req UpdateControllerSettings) error {
+	return s.publishMQTTMessage(ctx, "v2g/controller/settings", req)
+}
+
+func (s *Service) ShutdownMQTT(timeoutMils uint) {
+	s.client.Disconnect(timeoutMils)
 }

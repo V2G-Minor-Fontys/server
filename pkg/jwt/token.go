@@ -9,8 +9,8 @@ import (
 )
 
 type AccessToken struct {
-	Value     string
-	ExpiresAt time.Time
+	Value     string    `json:"value"`
+	ExpiresAt time.Time `json:"expiresAt"`
 }
 
 type RefreshToken struct {

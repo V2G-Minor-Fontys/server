@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS controllers (
     id UUID PRIMARY KEY,
-    serial_number TEXT NOT NULL,
+    cpu_id TEXT UNIQUE NOT NULL,
     user_id UUID REFERENCES users(id) ON DELETE SET NULL,
     firmware_version VARCHAR(100) NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -25,4 +25,5 @@ CREATE TABLE IF NOT EXISTS controller_telemetry (
 
 
 CREATE UNIQUE INDEX IF NOT EXISTS idx_controllers_user_id ON controllers(user_id);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_controllers_cpu_id ON controllers(cpu_id);
 CREATE INDEX IF NOT EXISTS idx_controller_telemetry_controller_id ON controller_telemetry(controller_id);

@@ -7,7 +7,7 @@ import (
 
 type Controller struct {
 	ID              uuid.UUID
-	SerialNumber    string
+	CpuID           string
 	FirmwareVersion string
 	Settings        *Settings
 }

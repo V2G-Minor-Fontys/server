@@ -66,6 +66,7 @@ func (s *Server) MountHandlers() error {
 		})
 		r.With(middleware.AuthVerifier(s.cfg.Jwt)).Route("/controllers", func(r chi.Router) {
 			r.Post("/register", middleware.ErrHandler(s.controllers.RegisterControllerHandler))
+			r.Get("/{cpuId}", middleware.ErrHandler(s.controllers.GetControllerByCpuIdHandler))
 		})
 		r.With(middleware.AuthVerifier(s.cfg.Jwt)).Route("/users/{userId}", func(r chi.Router) {
 			r.Get("/", middleware.ErrHandler(s.user.GetUserHandler))
@@ -76,7 +77,6 @@ func (s *Server) MountHandlers() error {
 				r.Post("/", middleware.ErrHandler(s.controllers.PairUserToControllerHandler))
 
 				r.Route("/{controllerId}", func(r chi.Router) {
-					r.Get("/", middleware.ErrHandler(s.controllers.GetControllerByIdHandler))
 					r.Put("/settings", middleware.ErrHandler(s.controllers.UpdateControllerSettingsHandler))
 
 					r.Post("/actions", middleware.ErrHandler(s.controllers.ExecuteControllerActionHandler))

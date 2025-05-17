@@ -17,3 +17,9 @@ type ControllerActionRequest struct {
 	ControllerID uuid.UUID `json:"controllerId,omitempty"`
 	Action       string    `json:"action"`
 }
+
+type UpdateControllerSettings struct {
+	ControllerID uuid.UUID `json:"controllerId"`
+	Heartbeat    int16     `json:"heartbeat"`
+	AutoStart    bool      `json:"autoStart"`
+}

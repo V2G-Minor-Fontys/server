@@ -13,18 +13,18 @@ import (
 )
 
 const addController = `-- name: AddController :exec
-INSERT INTO controllers (id, serial_number, firmware_version)
+INSERT INTO controllers (id, cpu_id, firmware_version)
 VALUES ($1, $2, $3)
 `
 
 type AddControllerParams struct {
 	ID              uuid.UUID `db:"id" json:"id"`
-	SerialNumber    string    `db:"serial_number" json:"serialNumber"`
+	CpuID           string    `db:"cpu_id" json:"cpuId"`
 	FirmwareVersion string    `db:"firmware_version" json:"firmwareVersion"`
 }
 
 func (q *Queries) AddController(ctx context.Context, arg AddControllerParams) error {
-	_, err := q.db.Exec(ctx, addController, arg.ID, arg.SerialNumber, arg.FirmwareVersion)
+	_, err := q.db.Exec(ctx, addController, arg.ID, arg.CpuID, arg.FirmwareVersion)
 	return err
 }
 
@@ -68,26 +68,26 @@ func (q *Queries) AddControllerTelemetry(ctx context.Context, arg AddControllerT
 	return err
 }
 
-const getControllerById = `-- name: GetControllerById :one
-SELECT c.id, c.serial_number, c.firmware_version, cs.id, cs.auto_start, cs.heartbeat_rate, cs.updated_at
+const getControllerByCpuId = `-- name: GetControllerByCpuId :one
+SELECT c.id, c.cpu_id, c.firmware_version, cs.id, cs.auto_start, cs.heartbeat_rate, cs.updated_at
 FROM controllers c
-JOIN public.controller_settings cs ON c.id = cs.id
-WHERE c.id = $1
+         JOIN public.controller_settings cs ON c.id = cs.id
+WHERE c.cpu_id = $1
 `
 
-type GetControllerByIdRow struct {
+type GetControllerByCpuIdRow struct {
 	ID                uuid.UUID         `db:"id" json:"id"`
-	SerialNumber      string            `db:"serial_number" json:"serialNumber"`
+	CpuID             string            `db:"cpu_id" json:"cpuId"`
 	FirmwareVersion   string            `db:"firmware_version" json:"firmwareVersion"`
 	ControllerSetting ControllerSetting `db:"controller_setting" json:"controllerSetting"`
 }
 
-func (q *Queries) GetControllerById(ctx context.Context, id uuid.UUID) (GetControllerByIdRow, error) {
-	row := q.db.QueryRow(ctx, getControllerById, id)
-	var i GetControllerByIdRow
+func (q *Queries) GetControllerByCpuId(ctx context.Context, cpuID string) (GetControllerByCpuIdRow, error) {
+	row := q.db.QueryRow(ctx, getControllerByCpuId, cpuID)
+	var i GetControllerByCpuIdRow
 	err := row.Scan(
 		&i.ID,
-		&i.SerialNumber,
+		&i.CpuID,
 		&i.FirmwareVersion,
 		&i.ControllerSetting.ID,
 		&i.ControllerSetting.AutoStart,
@@ -130,7 +130,7 @@ func (q *Queries) GetControllerTelemetryByControllerId(ctx context.Context, cont
 }
 
 const getPairedControllerByUserId = `-- name: GetPairedControllerByUserId :one
-SELECT c.id, c.serial_number, c.firmware_version, cs.id, cs.auto_start, cs.heartbeat_rate, cs.updated_at
+SELECT c.id, c.cpu_id, c.firmware_version, cs.id, cs.auto_start, cs.heartbeat_rate, cs.updated_at
 FROM controllers c
 JOIN public.controller_settings cs ON c.id = cs.id
 WHERE c.user_id = $1
@@ -138,7 +138,7 @@ WHERE c.user_id = $1
 
 type GetPairedControllerByUserIdRow struct {
 	ID                uuid.UUID         `db:"id" json:"id"`
-	SerialNumber      string            `db:"serial_number" json:"serialNumber"`
+	CpuID             string            `db:"cpu_id" json:"cpuId"`
 	FirmwareVersion   string            `db:"firmware_version" json:"firmwareVersion"`
 	ControllerSetting ControllerSetting `db:"controller_setting" json:"controllerSetting"`
 }
@@ -148,7 +148,7 @@ func (q *Queries) GetPairedControllerByUserId(ctx context.Context, userID pgtype
 	var i GetPairedControllerByUserIdRow
 	err := row.Scan(
 		&i.ID,
-		&i.SerialNumber,
+		&i.CpuID,
 		&i.FirmwareVersion,
 		&i.ControllerSetting.ID,
 		&i.ControllerSetting.AutoStart,
@@ -161,16 +161,16 @@ func (q *Queries) GetPairedControllerByUserId(ctx context.Context, userID pgtype
 const pairUserToController = `-- name: PairUserToController :exec
 UPDATE controllers
 SET user_id = $2, updated_at = CURRENT_TIMESTAMP
-WHERE serial_number = $1
+WHERE cpu_id = $1
 `
 
 type PairUserToControllerParams struct {
-	SerialNumber string      `db:"serial_number" json:"serialNumber"`
-	UserID       pgtype.UUID `db:"user_id" json:"userId"`
+	CpuID  string      `db:"cpu_id" json:"cpuId"`
+	UserID pgtype.UUID `db:"user_id" json:"userId"`
 }
 
 func (q *Queries) PairUserToController(ctx context.Context, arg PairUserToControllerParams) error {
-	_, err := q.db.Exec(ctx, pairUserToController, arg.SerialNumber, arg.UserID)
+	_, err := q.db.Exec(ctx, pairUserToController, arg.CpuID, arg.UserID)
 	return err
 }
 
