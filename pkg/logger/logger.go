@@ -5,31 +5,22 @@ import (
 	"log/slog"
 	"os"
 	"strings"
-	"sync"
-)
-
-var (
-	logger *slog.Logger
-	once   sync.Once
 )
 
 func Init(environment string, cfg *config.Logger) {
-	once.Do(func() {
-		var handler slog.Handler = slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+	var handler slog.Handler = slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+		AddSource: cfg.AddSource,
+		Level:     mapLogLevel(cfg.Level),
+	})
+
+	if strings.ToLower(environment) == "production" {
+		handler = slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
 			AddSource: cfg.AddSource,
 			Level:     mapLogLevel(cfg.Level),
 		})
+	}
 
-		if strings.ToLower(environment) == "production" {
-			handler = slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
-				AddSource: cfg.AddSource,
-				Level:     mapLogLevel(cfg.Level),
-			})
-		}
-
-		logger = slog.New(handler)
-		slog.SetDefault(logger)
-	})
+	slog.SetDefault(slog.New(handler))
 }
 
 func mapLogLevel(levelStr string) slog.Level {

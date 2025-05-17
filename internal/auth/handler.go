@@ -15,7 +15,7 @@ const (
 )
 
 type Handler struct {
-	svc *Service
+	svc Service
 }
 
 func NewHandler(cfg *config.Jwt, db *pgxpool.Pool, queries *repository.Queries) *Handler {

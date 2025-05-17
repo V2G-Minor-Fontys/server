@@ -15,7 +15,7 @@
     "expire": 60
   },
   "mqtt": {
-    "host": "tcp://localhost",
+    "host": "localhost",
     "port": "1883",
     "username": "your_mqtt_user"
   },

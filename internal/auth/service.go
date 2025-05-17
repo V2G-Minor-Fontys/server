@@ -18,17 +18,24 @@ import (
 	"time"
 )
 
-type Service struct {
+type Service interface {
+	Register(ctx context.Context, req RegisterRequest) (*AuthenticationResult, error)
+	Login(ctx context.Context, req LoginRequest) (*AuthenticationResult, error)
+	RefreshToken(ctx context.Context, token string) (*AuthenticationResult, error)
+	RevokeToken(ctx context.Context, token string) error
+}
+
+type ServiceImpl struct {
 	cfg     *config.Jwt
 	db      *pgxpool.Pool
 	queries *repository.Queries
 }
 
-func NewService(cfg *config.Jwt, db *pgxpool.Pool, queries *repository.Queries) *Service {
-	return &Service{cfg: cfg, db: db, queries: queries}
+func NewService(cfg *config.Jwt, db *pgxpool.Pool, queries *repository.Queries) *ServiceImpl {
+	return &ServiceImpl{cfg: cfg, db: db, queries: queries}
 }
 
-func (s *Service) Register(ctx context.Context, req RegisterRequest) (*AuthenticationResult, error) {
+func (s *ServiceImpl) Register(ctx context.Context, req RegisterRequest) (*AuthenticationResult, error) {
 	tx, err := s.db.Begin(ctx)
 	if err != nil {
 		return nil, httpx.InternalErr(ctx, "Failed to begin transaction", err)
@@ -40,7 +47,7 @@ func (s *Service) Register(ctx context.Context, req RegisterRequest) (*Authentic
 		}
 	}()
 
-	params, err := req.ToRegisterParams()
+	params, err := req.ToRegisterParams(crypto.HashPassword)
 	if err != nil {
 		return nil, httpx.BadRequest(ctx, "Invalid registration data provided")
 	}
@@ -92,7 +99,7 @@ func (s *Service) Register(ctx context.Context, req RegisterRequest) (*Authentic
 	}, nil
 }
 
-func (s *Service) Login(ctx context.Context, req LoginRequest) (*AuthenticationResult, error) {
+func (s *ServiceImpl) Login(ctx context.Context, req LoginRequest) (*AuthenticationResult, error) {
 	identity, err := s.queries.GetIdentityByUsername(ctx, req.Username)
 	if err != nil {
 		return nil, httpx.BadRequest(ctx, "Invalid username or password")
@@ -134,7 +141,7 @@ func (s *Service) Login(ctx context.Context, req LoginRequest) (*AuthenticationR
 	}, nil
 }
 
-func (s *Service) RefreshToken(ctx context.Context, token string) (*AuthenticationResult, error) {
+func (s *ServiceImpl) RefreshToken(ctx context.Context, token string) (*AuthenticationResult, error) {
 	rtBytes, err := hex.DecodeString(token)
 	if err != nil {
 		return nil, httpx.BadRequest(ctx, "Refresh token could not be decoded")
@@ -162,7 +169,7 @@ func (s *Service) RefreshToken(ctx context.Context, token string) (*Authenticati
 	}, nil
 }
 
-func (s *Service) RevokeToken(ctx context.Context, token string) error {
+func (s *ServiceImpl) RevokeToken(ctx context.Context, token string) error {
 	rtBytes, err := hex.DecodeString(token)
 	if err != nil {
 		return httpx.BadRequest(ctx, "Refresh token could not be decoded")

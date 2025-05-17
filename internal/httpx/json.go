@@ -8,6 +8,14 @@ import (
 	"net/http"
 )
 
+func DecodeJSONBody(r *http.Request, v interface{}) error {
+	err := json.NewDecoder(r.Body).Decode(v)
+	if err != nil {
+		return BadRequest(r.Context(), "Could not parse JSON body")
+	}
+	return nil
+}
+
 func ResponseWithJSON(w http.ResponseWriter, statusCode int, content any) {
 	w.Header().Add("Content-Type", "application/json")
 	w.WriteHeader(statusCode)

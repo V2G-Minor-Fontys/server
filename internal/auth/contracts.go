@@ -2,7 +2,6 @@ package auth
 
 import (
 	"github.com/V2G-Minor-Fontys/server/internal/repository"
-	"github.com/V2G-Minor-Fontys/server/pkg/crypto"
 	"github.com/V2G-Minor-Fontys/server/pkg/jwt"
 	"github.com/google/uuid"
 )
@@ -11,9 +10,10 @@ type RegisterRequest struct {
 	Username string `json:"username,omitempty"`
 	Password string `json:"password,omitempty"`
 }
+type PasswordHasher func(password string) (string, error)
 
-func (r *RegisterRequest) ToRegisterParams() (*repository.RegisterParams, error) {
-	passHash, err := crypto.HashPassword(r.Password)
+func (r *RegisterRequest) ToRegisterParams(hasher PasswordHasher) (*repository.RegisterParams, error) {
+	passHash, err := hasher(r.Password)
 	if err != nil {
 		return nil, err
 	}

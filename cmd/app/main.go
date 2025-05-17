@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"github.com/V2G-Minor-Fontys/server/internal/config"
+	"github.com/V2G-Minor-Fontys/server/internal/mqtt"
 	"github.com/V2G-Minor-Fontys/server/internal/repository"
 	"github.com/V2G-Minor-Fontys/server/internal/router"
 	"github.com/V2G-Minor-Fontys/server/pkg/logger"
@@ -29,7 +30,12 @@ func main() {
 	}
 
 	repo := repository.New(conn)
-	srv := router.NewServer(cfg, conn, repo)
+	client, err := mqtt.NewClient(cfg.Mqtt)
+	if err != nil {
+		panic(err)
+	}
+
+	srv := router.NewServer(cfg, mqtt.NewService(client), conn, repo)
 	if err = srv.MountHandlers(); err != nil {
 		panic(err)
 	}

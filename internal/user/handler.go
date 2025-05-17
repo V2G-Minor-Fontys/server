@@ -24,7 +24,7 @@ func NewHandler(cfg *config.Jwt, db *pgxpool.Pool, queries *repository.Queries) 
 
 func (h *Handler) GetUserHandler(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
-	idParam := chi.URLParam(r, "id")
+	idParam := chi.URLParam(r, "userId")
 
 	id, err := uuid.Parse(idParam)
 	if err != nil {
@@ -41,14 +41,14 @@ func (h *Handler) GetUserHandler(w http.ResponseWriter, r *http.Request) error {
 
 func (h *Handler) DeleteUserHandler(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
-	idParam := chi.URLParam(r, "id")
+	idParam := chi.URLParam(r, "userId")
 
 	id, err := uuid.Parse(idParam)
 	if err != nil {
 		return httpx.BadRequest(ctx, "Invalid id")
 	}
 
-	err = h.svc.queries.DeleteUserById(r.Context(), id)
+	err = h.svc.queries.DeleteIdentityById(r.Context(), id)
 	if err != nil {
 		return httpx.BadRequest(ctx, "Could not find user")
 	}
