@@ -47,7 +47,7 @@ func (s *ServiceImpl) Register(ctx context.Context, req RegisterRequest) (*Authe
 		}
 	}()
 
-	params, err := req.ToRegisterParams(crypto.HashPassword)
+	params, err := mapRegisterRequestToParams(crypto.HashPassword, &req)
 	if err != nil {
 		return nil, httpx.BadRequest(ctx, "Invalid registration data provided")
 	}
@@ -95,7 +95,7 @@ func (s *ServiceImpl) Register(ctx context.Context, req RegisterRequest) (*Authe
 	return &AuthenticationResult{
 		ID:           params.ID,
 		AccessToken:  at,
-		RefreshToken: &rt,
+		RefreshToken: mapDatabaseRefreshTokenToToken(&rt),
 	}, nil
 }
 
@@ -137,7 +137,7 @@ func (s *ServiceImpl) Login(ctx context.Context, req LoginRequest) (*Authenticat
 	return &AuthenticationResult{
 		ID:           identity.ID,
 		AccessToken:  at,
-		RefreshToken: &rt,
+		RefreshToken: mapDatabaseRefreshTokenToToken(&rt),
 	}, nil
 }
 
@@ -165,7 +165,7 @@ func (s *ServiceImpl) RefreshToken(ctx context.Context, token string) (*Authenti
 	return &AuthenticationResult{
 		ID:           identity.ID,
 		AccessToken:  at,
-		RefreshToken: &rt,
+		RefreshToken: mapDatabaseRefreshTokenToToken(&rt),
 	}, nil
 }
 

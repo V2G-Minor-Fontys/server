@@ -3,7 +3,7 @@ package httpx
 import (
 	"encoding/hex"
 	"encoding/json"
-	"github.com/V2G-Minor-Fontys/server/internal/repository"
+	"github.com/V2G-Minor-Fontys/server/pkg/jwt"
 	"log/slog"
 	"net/http"
 )
@@ -29,7 +29,7 @@ func ResponseWithJSON(w http.ResponseWriter, statusCode int, content any) {
 	}
 }
 
-func SetRefreshToken(w http.ResponseWriter, refreshToken *repository.RefreshToken) {
+func SetRefreshToken(w http.ResponseWriter, refreshToken *jwt.RefreshToken) {
 	cookie := &http.Cookie{
 		Name:     "refresh-token",
 		Value:    "",

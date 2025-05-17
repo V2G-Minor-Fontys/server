@@ -33,7 +33,7 @@ func NewServer(cfg *config.Config, mqttService *mqtt.Service, pool *pgxpool.Pool
 	srv := &Server{
 		cfg:         cfg,
 		auth:        auth.NewHandler(cfg.Jwt, pool, queries),
-		user:        user.NewHandler(cfg.Jwt, pool, queries),
+		user:        user.NewHandler(pool, queries),
 		controllers: controller.NewHandler(mqttService, pool, queries),
 	}
 

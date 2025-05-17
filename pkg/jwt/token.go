@@ -4,12 +4,20 @@ import (
 	"crypto/rand"
 	"github.com/V2G-Minor-Fontys/server/internal/config"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
 	"time"
 )
 
 type AccessToken struct {
-	Value     string    `json:"value,omitempty"`
-	ExpiresAt time.Time `json:"expiresAt"`
+	Value     string
+	ExpiresAt time.Time
+}
+
+type RefreshToken struct {
+	Token      []byte
+	IdentityID uuid.UUID
+	CreatedAt  time.Time
+	ExpiresAt  time.Time
 }
 
 func GenerateAccessToken(userID string, cfg *config.Jwt) (*AccessToken, error) {
