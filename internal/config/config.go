@@ -106,16 +106,14 @@ func NewRedisConfigFromEnv() *Redis {
 }
 
 type Mqtt struct {
-	Host     string `json:"host,omitempty"`
-	Username string `json:"username,omitempty"`
-	Port     string `json:"port,omitempty"`
+	Host string `json:"host,omitempty"`
+	Port string `json:"port,omitempty"`
 }
 
 func NewMqttConfigFromEnv() *Mqtt {
 	return &Mqtt{
-		Host:     mustGetEnv("MQTT_HOST"),
-		Username: mustGetEnv("MQTT_USERNAME"),
-		Port:     mustGetEnv("MQTT_PORT"),
+		Host: mustGetEnv("MQTT_HOST"),
+		Port: mustGetEnv("MQTT_PORT"),
 	}
 }
 

@@ -3,10 +3,18 @@ package httpx
 import (
 	"encoding/hex"
 	"encoding/json"
-	"github.com/V2G-Minor-Fontys/server/internal/repository"
+	"github.com/V2G-Minor-Fontys/server/pkg/jwt"
 	"log/slog"
 	"net/http"
 )
+
+func DecodeJSONBody(r *http.Request, v interface{}) error {
+	err := json.NewDecoder(r.Body).Decode(v)
+	if err != nil {
+		return BadRequest(r.Context(), "Could not parse JSON body")
+	}
+	return nil
+}
 
 func ResponseWithJSON(w http.ResponseWriter, statusCode int, content any) {
 	w.Header().Add("Content-Type", "application/json")
@@ -21,7 +29,7 @@ func ResponseWithJSON(w http.ResponseWriter, statusCode int, content any) {
 	}
 }
 
-func SetRefreshToken(w http.ResponseWriter, refreshToken *repository.RefreshToken) {
+func SetRefreshToken(w http.ResponseWriter, refreshToken *jwt.RefreshToken) {
 	cookie := &http.Cookie{
 		Name:     "refresh-token",
 		Value:    "",

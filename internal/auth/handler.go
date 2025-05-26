@@ -1,7 +1,6 @@
 package auth
 
 import (
-	"encoding/json"
 	"github.com/V2G-Minor-Fontys/server/internal/config"
 	"github.com/V2G-Minor-Fontys/server/internal/httpx"
 	"github.com/V2G-Minor-Fontys/server/internal/repository"
@@ -15,7 +14,7 @@ const (
 )
 
 type Handler struct {
-	svc *Service
+	svc Service
 }
 
 func NewHandler(cfg *config.Jwt, db *pgxpool.Pool, queries *repository.Queries) *Handler {
@@ -25,37 +24,35 @@ func NewHandler(cfg *config.Jwt, db *pgxpool.Pool, queries *repository.Queries) 
 }
 
 func (h *Handler) RegisterHandler(w http.ResponseWriter, r *http.Request) error {
-	ctx := r.Context()
 	var req RegisterRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		return httpx.BadRequest(ctx, "Could not parse JSON body")
+	if err := httpx.DecodeJSONBody(r, &req); err != nil {
+		return err
 	}
 
-	res, err := h.svc.Register(ctx, req)
+	res, err := h.svc.Register(r.Context(), req)
 	if err != nil {
 		return err
 	}
 
 	httpx.SetRefreshToken(w, res.RefreshToken)
-	httpx.ResponseWithJSON(w, http.StatusCreated, res.ToAuthenticationResponse())
+	httpx.ResponseWithJSON(w, http.StatusCreated, mapResultToResponse(res))
 
 	return nil
 }
 
 func (h *Handler) LoginHandler(w http.ResponseWriter, r *http.Request) error {
-	ctx := r.Context()
 	var req LoginRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		return httpx.BadRequest(ctx, "Invalid JSON body")
+	if err := httpx.DecodeJSONBody(r, &req); err != nil {
+		return err
 	}
 
-	res, err := h.svc.Login(ctx, req)
+	res, err := h.svc.Login(r.Context(), req)
 	if err != nil {
 		return err
 	}
 
 	httpx.SetRefreshToken(w, res.RefreshToken)
-	httpx.ResponseWithJSON(w, http.StatusOK, res.ToAuthenticationResponse())
+	httpx.ResponseWithJSON(w, http.StatusOK, mapResultToResponse(res))
 
 	return nil
 }
@@ -73,7 +70,7 @@ func (h *Handler) RefreshTokenHandler(w http.ResponseWriter, r *http.Request) er
 	}
 
 	httpx.SetRefreshToken(w, res.RefreshToken)
-	httpx.ResponseWithJSON(w, http.StatusOK, res.ToAuthenticationResponse())
+	httpx.ResponseWithJSON(w, http.StatusOK, mapResultToResponse(res))
 
 	return nil
 }

@@ -15,9 +15,8 @@
     "expire": 60
   },
   "mqtt": {
-    "host": "tcp://localhost",
-    "port": "1883",
-    "username": "your_mqtt_user"
+    "host": "localhost",
+    "port": "1883"
   },
   "jwt": {
     "secret": "dev_secret_key",

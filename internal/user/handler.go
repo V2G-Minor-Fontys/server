@@ -1,57 +1,48 @@
 package user
 
 import (
-	"encoding/json"
 	"net/http"
 
-	"github.com/V2G-Minor-Fontys/server/internal/config"
 	"github.com/V2G-Minor-Fontys/server/internal/httpx"
 	"github.com/V2G-Minor-Fontys/server/internal/repository"
-	"github.com/go-chi/chi/v5"
-	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type Handler struct {
-	svc *Service
+	svc Service
 }
 
-func NewHandler(cfg *config.Jwt, db *pgxpool.Pool, queries *repository.Queries) *Handler {
+func NewHandler(db *pgxpool.Pool, queries *repository.Queries) *Handler {
 	return &Handler{
-		svc: NewService(cfg, db, queries),
+		svc: NewService(db, queries),
 	}
 }
 
 func (h *Handler) GetUserHandler(w http.ResponseWriter, r *http.Request) error {
-	ctx := r.Context()
-	idParam := chi.URLParam(r, "id")
-
-	id, err := uuid.Parse(idParam)
+	userId, err := httpx.ParseUUIDParam(r, "userId")
 	if err != nil {
-		return httpx.BadRequest(ctx, "Invalid id")
+		return err
 	}
 
-	user, err := h.svc.queries.GetUserById(r.Context(), id)
+	user, err := h.svc.GetUserById(r.Context(), userId)
 	if err != nil {
-		return httpx.BadRequest(ctx, "Could not find user")
+		return err
 	}
 
-	return json.NewEncoder(w).Encode(user)
+	httpx.ResponseWithJSON(w, http.StatusOK, mapUserToResponse(user))
+	return nil
 }
 
 func (h *Handler) DeleteUserHandler(w http.ResponseWriter, r *http.Request) error {
-	ctx := r.Context()
-	idParam := chi.URLParam(r, "id")
-
-	id, err := uuid.Parse(idParam)
+	userId, err := httpx.ParseUUIDParam(r, "userId")
 	if err != nil {
-		return httpx.BadRequest(ctx, "Invalid id")
+		return err
 	}
 
-	err = h.svc.queries.DeleteUserById(r.Context(), id)
-	if err != nil {
-		return httpx.BadRequest(ctx, "Could not find user")
+	if err = h.svc.DeleteUserById(r.Context(), userId); err != nil {
+		return err
 	}
 
+	httpx.ResponseWithJSON(w, http.StatusNoContent, nil)
 	return nil
 }

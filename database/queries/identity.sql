@@ -27,6 +27,6 @@ RETURNING *;
 DELETE FROM refresh_tokens
 WHERE token = $1;
 
--- name: DeleteIdentityById :exec
+-- name: DeleteIdentityById :execrows
 DELETE FROM identities
 WHERE id = $1;
