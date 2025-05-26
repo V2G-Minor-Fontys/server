@@ -19,9 +19,9 @@ RETURNING token, identity_id, created_at, expires_at
 `
 
 type CreateRefreshTokenParams struct {
-	Token      []byte    `db:"token" json:"token"`
-	IdentityID uuid.UUID `db:"identity_id" json:"identityId"`
-	ExpiresAt  time.Time `db:"expires_at" json:"expiresAt"`
+	Token      []byte    `db:"token"`
+	IdentityID uuid.UUID `db:"identity_id"`
+	ExpiresAt  time.Time `db:"expires_at"`
 }
 
 func (q *Queries) CreateRefreshToken(ctx context.Context, arg CreateRefreshTokenParams) (RefreshToken, error) {
@@ -136,9 +136,9 @@ VALUES ($1, $2, $3)
 `
 
 type RegisterParams struct {
-	ID           uuid.UUID `db:"id" json:"id"`
-	Username     string    `db:"username" json:"username"`
-	PasswordHash string    `db:"password_hash" json:"passwordHash"`
+	ID           uuid.UUID `db:"id"`
+	Username     string    `db:"username"`
+	PasswordHash string    `db:"password_hash"`
 }
 
 func (q *Queries) Register(ctx context.Context, arg RegisterParams) error {

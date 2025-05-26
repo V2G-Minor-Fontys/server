@@ -15,12 +15,28 @@ func mapDatabaseTelemetrySliceToTelemetrySlice(data []repository.ControllerTelem
 func mapDatabaseTelemetryToTelemetry(telemetry *repository.ControllerTelemetry) *Telemetry {
 	controllerID, _ := repository.ParsePgUUIDToGuid(telemetry.ControllerID)
 	return &Telemetry{
-		ID:            telemetry.ID,
-		ControllerID:  controllerID,
-		Timestamp:     telemetry.Timestamp,
-		OutputPower:   telemetry.OutputPower,
-		Soc:           telemetry.Soc,
-		EvDischarging: telemetry.EvDischarging,
+		ID:                  telemetry.ID,
+		ControllerID:        controllerID,
+		BatteryVoltage:      telemetry.BatteryVoltage,
+		BatteryCurrent:      telemetry.BatteryCurrent,
+		BatteryPower:        telemetry.BatteryPower,
+		BatteryState:        telemetry.BatteryState,
+		InternalTemperature: telemetry.InternalTemperature,
+		ModuleTemperature:   telemetry.ModuleTemperature,
+		RadiatorTemperature: telemetry.RadiatorTemperature,
+		GridPowerR:          telemetry.GridPowerR,
+		TotalInverterPower:  telemetry.TotalInverterPower,
+		AcActivePower:       telemetry.AcActivePower,
+		LoadPowerR:          telemetry.LoadPowerR,
+		TotalLoadPower:      telemetry.TotalLoadPower,
+		TotalEnergyToGrid:   telemetry.TotalEnergyToGrid,
+		DailyEnergyToGrid:   telemetry.DailyEnergyToGrid,
+		TotalEnergyFromGrid: telemetry.TotalEnergyFromGrid,
+		DailyEnergyFromGrid: telemetry.DailyEnergyFromGrid,
+		WorkMode:            telemetry.WorkMode,
+		OperationMode:       telemetry.OperationMode,
+		ErrorMessage:        telemetry.ErrorMessage,
+		WarningCode:         telemetry.WarningCode,
 	}
 }
 
@@ -59,10 +75,26 @@ func mapTelemetrySliceToResponse(data []*Telemetry) []*TelemetryResponse {
 
 func mapTelemetryToResponse(telemetry *Telemetry) *TelemetryResponse {
 	return &TelemetryResponse{
-		ControllerID:  telemetry.ControllerID,
-		Timestamp:     telemetry.Timestamp,
-		OutputPower:   telemetry.OutputPower,
-		Soc:           telemetry.Soc,
-		EvDischarging: telemetry.EvDischarging,
+		ControllerID:        telemetry.ControllerID,
+		BatteryVoltage:      telemetry.BatteryVoltage,
+		BatteryCurrent:      telemetry.BatteryCurrent,
+		BatteryPower:        telemetry.BatteryPower,
+		BatteryState:        telemetry.BatteryState,
+		InternalTemperature: telemetry.InternalTemperature,
+		ModuleTemperature:   telemetry.ModuleTemperature,
+		RadiatorTemperature: telemetry.RadiatorTemperature,
+		GridPowerR:          telemetry.GridPowerR,
+		TotalInverterPower:  telemetry.TotalInverterPower,
+		AcActivePower:       telemetry.AcActivePower,
+		LoadPowerR:          telemetry.LoadPowerR,
+		TotalLoadPower:      telemetry.TotalLoadPower,
+		TotalEnergyToGrid:   telemetry.TotalEnergyToGrid,
+		DailyEnergyToGrid:   telemetry.DailyEnergyToGrid,
+		TotalEnergyFromGrid: telemetry.TotalEnergyFromGrid,
+		DailyEnergyFromGrid: telemetry.DailyEnergyFromGrid,
+		WorkMode:            telemetry.WorkMode,
+		OperationMode:       telemetry.OperationMode,
+		ErrorMessage:        telemetry.ErrorMessage,
+		WarningCode:         telemetry.WarningCode,
 	}
 }

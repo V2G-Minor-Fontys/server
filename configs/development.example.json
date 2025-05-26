@@ -16,8 +16,7 @@
   },
   "mqtt": {
     "host": "localhost",
-    "port": "1883",
-    "username": "your_mqtt_user"
+    "port": "1883"
   },
   "jwt": {
     "secret": "dev_secret_key",

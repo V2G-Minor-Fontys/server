@@ -18,9 +18,32 @@ CREATE TABLE IF NOT EXISTS controller_telemetry (
     id UUID PRIMARY KEY,
     controller_id UUID REFERENCES controllers(id) ON DELETE CASCADE,
     timestamp TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    output_power INTEGER NOT NULL,
-    soc SMALLINT NOT NULL,
-    ev_discharging BOOLEAN NOT NULL
+
+    battery_voltage FLOAT NOT NULL,
+    battery_current FLOAT NOT NULL,
+    battery_power FLOAT NOT NULL,
+    battery_state SMALLINT NOT NULL,
+
+    internal_temperature FLOAT NOT NULL,
+    module_temperature FLOAT NOT NULL,
+    radiator_temperature FLOAT NOT NULL,
+
+    grid_power_r INT NOT NULL,
+    total_inverter_power INT NOT NULL,
+    ac_active_power INT NOT NULL,
+    load_power_r INT NOT NULL,
+    total_load_power INT NOT NULL,
+
+    total_energy_to_grid FLOAT NOT NULL,
+    daily_energy_to_grid FLOAT NOT NULL,
+    total_energy_from_grid FLOAT NOT NULL,
+    daily_energy_from_grid FLOAT NOT NULL,
+
+    work_mode SMALLINT NOT NULL,
+    operation_mode SMALLINT NOT NULL,
+
+    error_message BIGINT NOT NULL,
+    warning_code SMALLINT NOT NULL
 );
 
 

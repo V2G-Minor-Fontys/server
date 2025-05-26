@@ -90,10 +90,15 @@ func (s *ServiceImpl) RegisterController(ctx context.Context, req *RegisterContr
 }
 
 func (s *ServiceImpl) PairUserToController(ctx context.Context, req *PairUserToControllerRequest) error {
-	if err := s.queries.PairUserToController(ctx, repository.PairUserToControllerParams{
+	rows, err := s.queries.PairUserToController(ctx, repository.PairUserToControllerParams{
 		CpuID:  req.CpuID,
 		UserID: repository.GuidToPgUUID(req.UserId),
-	}); err != nil {
+	})
+	if rows < 1 {
+		return httpx.NotFound(ctx, "User or controller not found")
+	}
+
+	if err != nil {
 		return httpx.InternalErr(ctx, "Could not pair the user to controller", err)
 	}
 
@@ -121,7 +126,7 @@ func (s *ServiceImpl) GetControllerTelemetryById(ctx context.Context, id uuid.UU
 	}
 
 	if len(controllerTelemetries) == 0 {
-		return nil, httpx.NotFound(ctx, "No telemetry found for controller")
+		return nil, httpx.NotFound(ctx, "No telemetry found for the provided controller")
 	}
 
 	return mapDatabaseTelemetrySliceToTelemetrySlice(controllerTelemetries), nil
@@ -130,7 +135,7 @@ func (s *ServiceImpl) GetControllerTelemetryById(ctx context.Context, id uuid.UU
 func (s *ServiceImpl) GetControllerByUserId(ctx context.Context, id uuid.UUID) (*Controller, error) {
 	controllerRow, err := s.queries.GetPairedControllerByUserId(ctx, repository.GuidToPgUUID(id))
 	if errors.Is(err, sql.ErrNoRows) {
-		return nil, httpx.NotFound(ctx, "Controller not found")
+		return nil, httpx.NotFound(ctx, "User does not have any paired controllers")
 	}
 
 	return &Controller{
@@ -143,11 +148,28 @@ func (s *ServiceImpl) GetControllerByUserId(ctx context.Context, id uuid.UUID) (
 
 func (s *ServiceImpl) AddControllerTelemetry(ctx context.Context, req *AddControllerTelemetryRequest) error {
 	if err := s.queries.AddControllerTelemetry(ctx, repository.AddControllerTelemetryParams{
-		ID:            uuid.New(),
-		ControllerID:  repository.GuidToPgUUID(req.ControllerID),
-		OutputPower:   req.OutputPower,
-		Soc:           req.Soc,
-		EvDischarging: req.EvDischarging,
+		ID:                  uuid.New(),
+		ControllerID:        repository.GuidToPgUUID(req.ControllerID),
+		BatteryVoltage:      req.BatteryVoltage,
+		BatteryCurrent:      req.BatteryCurrent,
+		BatteryPower:        req.BatteryPower,
+		BatteryState:        req.BatteryState,
+		InternalTemperature: req.InternalTemperature,
+		ModuleTemperature:   req.ModuleTemperature,
+		RadiatorTemperature: req.RadiatorTemperature,
+		GridPowerR:          req.GridPowerR,
+		TotalInverterPower:  req.TotalInverterPower,
+		AcActivePower:       req.AcActivePower,
+		LoadPowerR:          req.LoadPowerR,
+		TotalLoadPower:      req.TotalLoadPower,
+		TotalEnergyToGrid:   req.TotalEnergyToGrid,
+		DailyEnergyToGrid:   req.DailyEnergyToGrid,
+		TotalEnergyFromGrid: req.TotalEnergyFromGrid,
+		DailyEnergyFromGrid: req.DailyEnergyFromGrid,
+		WorkMode:            req.WorkMode,
+		OperationMode:       req.OperationMode,
+		ErrorMessage:        req.ErrorMessage,
+		WarningCode:         req.WarningCode,
 	}); err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) && pgErr.Code == pgerrcode.ForeignKeyViolation {
@@ -159,15 +181,18 @@ func (s *ServiceImpl) AddControllerTelemetry(ctx context.Context, req *AddContro
 }
 
 func (s *ServiceImpl) UpdateControllerSettings(ctx context.Context, req *UpdateControllerSettingsRequest) error {
-	if err := s.queries.UpdateControllerSettings(ctx, repository.UpdateControllerSettingsParams{
+	rows, err := s.queries.UpdateControllerSettings(ctx, repository.UpdateControllerSettingsParams{
 		ID:            req.ID,
 		AutoStart:     req.AutoStart,
 		HeartbeatRate: req.Heartbeat,
-	}); err != nil {
-		var pgErr *pgconn.PgError
-		if errors.As(err, &pgErr) && pgErr.Code == pgerrcode.UniqueViolation {
-			return httpx.Conflict(ctx, "Controller settings is already registered")
-		}
+	})
+
+	if rows < 1 {
+		return httpx.NotFound(ctx, "Controller not found")
+	}
+
+	if err != nil {
+		return httpx.InternalErr(ctx, "Unable to update controller settings", err)
 	}
 
 	return nil

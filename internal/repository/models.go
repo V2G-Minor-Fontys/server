@@ -12,46 +12,63 @@ import (
 )
 
 type Controller struct {
-	ID              uuid.UUID   `db:"id" json:"id"`
-	CpuID           string      `db:"cpu_id" json:"cpuId"`
-	UserID          pgtype.UUID `db:"user_id" json:"userId"`
-	FirmwareVersion string      `db:"firmware_version" json:"firmwareVersion"`
-	CreatedAt       time.Time   `db:"created_at" json:"createdAt"`
-	UpdatedAt       time.Time   `db:"updated_at" json:"updatedAt"`
+	ID              uuid.UUID   `db:"id"`
+	CpuID           string      `db:"cpu_id"`
+	UserID          pgtype.UUID `db:"user_id"`
+	FirmwareVersion string      `db:"firmware_version"`
+	CreatedAt       time.Time   `db:"created_at"`
+	UpdatedAt       time.Time   `db:"updated_at"`
 }
 
 type ControllerSetting struct {
-	ID            uuid.UUID `db:"id" json:"id"`
-	AutoStart     bool      `db:"auto_start" json:"autoStart"`
-	HeartbeatRate int16     `db:"heartbeat_rate" json:"heartbeatRate"`
-	UpdatedAt     time.Time `db:"updated_at" json:"updatedAt"`
+	ID            uuid.UUID `db:"id"`
+	AutoStart     bool      `db:"auto_start"`
+	HeartbeatRate int16     `db:"heartbeat_rate"`
+	UpdatedAt     time.Time `db:"updated_at"`
 }
 
 type ControllerTelemetry struct {
-	ID            uuid.UUID   `db:"id" json:"id"`
-	ControllerID  pgtype.UUID `db:"controller_id" json:"controllerId"`
-	Timestamp     time.Time   `db:"timestamp" json:"timestamp"`
-	OutputPower   int32       `db:"output_power" json:"outputPower"`
-	Soc           int16       `db:"soc" json:"soc"`
-	EvDischarging bool        `db:"ev_discharging" json:"evDischarging"`
+	ID                  uuid.UUID   `db:"id"`
+	ControllerID        pgtype.UUID `db:"controller_id"`
+	Timestamp           time.Time   `db:"timestamp"`
+	BatteryVoltage      float64     `db:"battery_voltage"`
+	BatteryCurrent      float64     `db:"battery_current"`
+	BatteryPower        float64     `db:"battery_power"`
+	BatteryState        int16       `db:"battery_state"`
+	InternalTemperature float64     `db:"internal_temperature"`
+	ModuleTemperature   float64     `db:"module_temperature"`
+	RadiatorTemperature float64     `db:"radiator_temperature"`
+	GridPowerR          int32       `db:"grid_power_r"`
+	TotalInverterPower  int32       `db:"total_inverter_power"`
+	AcActivePower       int32       `db:"ac_active_power"`
+	LoadPowerR          int32       `db:"load_power_r"`
+	TotalLoadPower      int32       `db:"total_load_power"`
+	TotalEnergyToGrid   float64     `db:"total_energy_to_grid"`
+	DailyEnergyToGrid   float64     `db:"daily_energy_to_grid"`
+	TotalEnergyFromGrid float64     `db:"total_energy_from_grid"`
+	DailyEnergyFromGrid float64     `db:"daily_energy_from_grid"`
+	WorkMode            int16       `db:"work_mode"`
+	OperationMode       int16       `db:"operation_mode"`
+	ErrorMessage        int64       `db:"error_message"`
+	WarningCode         int16       `db:"warning_code"`
 }
 
 type Identity struct {
-	ID           uuid.UUID `db:"id" json:"id"`
-	Username     string    `db:"username" json:"username"`
-	PasswordHash string    `db:"password_hash" json:"passwordHash"`
-	CreatedAt    time.Time `db:"created_at" json:"createdAt"`
+	ID           uuid.UUID `db:"id"`
+	Username     string    `db:"username"`
+	PasswordHash string    `db:"password_hash"`
+	CreatedAt    time.Time `db:"created_at"`
 }
 
 type RefreshToken struct {
-	Token      []byte    `db:"token" json:"token"`
-	IdentityID uuid.UUID `db:"identity_id" json:"identityId"`
-	CreatedAt  time.Time `db:"created_at" json:"createdAt"`
-	ExpiresAt  time.Time `db:"expires_at" json:"expiresAt"`
+	Token      []byte    `db:"token"`
+	IdentityID uuid.UUID `db:"identity_id"`
+	CreatedAt  time.Time `db:"created_at"`
+	ExpiresAt  time.Time `db:"expires_at"`
 }
 
 type User struct {
-	ID        uuid.UUID `db:"id" json:"id"`
-	Username  string    `db:"username" json:"username"`
-	CreatedAt time.Time `db:"created_at" json:"createdAt"`
+	ID        uuid.UUID `db:"id"`
+	Username  string    `db:"username"`
+	CreatedAt time.Time `db:"created_at"`
 }

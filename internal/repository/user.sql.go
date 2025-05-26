@@ -17,8 +17,8 @@ VALUES ($1, $2)
 `
 
 type CreateUserParams struct {
-	ID       uuid.UUID `db:"id" json:"id"`
-	Username string    `db:"username" json:"username"`
+	ID       uuid.UUID `db:"id"`
+	Username string    `db:"username"`
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) error {

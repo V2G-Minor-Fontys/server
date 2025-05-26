@@ -1,4 +1,13 @@
 services:
+  server:
+    image: mqsr/v2g-server:1.0.0
+    ports:
+      - "8080:8080"
+    env_file:
+      - configs/.env
+    depends_on:
+      - postgres
+
   postgres:
     image: postgres:17-alpine
     ports:

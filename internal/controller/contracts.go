@@ -2,7 +2,6 @@ package controller
 
 import (
 	"github.com/google/uuid"
-	"time"
 )
 
 type RegisterControllerRequest struct {
@@ -16,11 +15,27 @@ type PairUserToControllerRequest struct {
 }
 
 type AddControllerTelemetryRequest struct {
-	ControllerID  uuid.UUID `json:"controllerId"`
-	TimeStamp     time.Time `json:"timeStamp"`
-	OutputPower   int32     `json:"outputPower"`
-	Soc           int16     `json:"soc"`
-	EvDischarging bool      `json:"evDischarging"`
+	ControllerID        uuid.UUID `json:"controllerID"`
+	BatteryVoltage      float64   `json:"batteryVoltage"`
+	BatteryCurrent      float64   `json:"batteryCurrent"`
+	BatteryPower        float64   `json:"batteryPower"`
+	BatteryState        int16     `json:"batteryState"`
+	InternalTemperature float64   `json:"internalTemperature"`
+	ModuleTemperature   float64   `json:"moduleTemperature"`
+	RadiatorTemperature float64   `json:"radiatorTemperature"`
+	GridPowerR          int32     `json:"gridPowerR"`
+	TotalInverterPower  int32     `json:"totalInverterPower"`
+	AcActivePower       int32     `json:"acActivePower"`
+	LoadPowerR          int32     `json:"loadPowerR"`
+	TotalLoadPower      int32     `json:"totalLoadPower"`
+	TotalEnergyToGrid   float64   `json:"totalEnergyToGrid"`
+	DailyEnergyToGrid   float64   `json:"dailyEnergyToGrid"`
+	TotalEnergyFromGrid float64   `json:"totalEnergyFromGrid"`
+	DailyEnergyFromGrid float64   `json:"dailyEnergyFromGrid"`
+	WorkMode            int16     `json:"workMode"`
+	OperationMode       int16     `json:"operationMode"`
+	ErrorMessage        int64     `json:"errorMessage"`
+	WarningCode         int16     `json:"warningCode"`
 }
 
 type UpdateControllerSettingsRequest struct {
@@ -42,9 +57,25 @@ type SettingsResponse struct {
 }
 
 type TelemetryResponse struct {
-	ControllerID  uuid.UUID `json:"controllerId"`
-	Timestamp     time.Time `json:"timestamp"`
-	OutputPower   int32     `json:"outputPower"`
-	Soc           int16     `json:"soc"`
-	EvDischarging bool      `json:"evDischarging"`
+	ControllerID        uuid.UUID `json:"controllerID"`
+	BatteryVoltage      float64   `json:"batteryVoltage"`
+	BatteryCurrent      float64   `json:"batteryCurrent"`
+	BatteryPower        float64   `json:"batteryPower"`
+	BatteryState        int16     `json:"batteryState"`
+	InternalTemperature float64   `json:"internalTemperature"`
+	ModuleTemperature   float64   `json:"moduleTemperature"`
+	RadiatorTemperature float64   `json:"radiatorTemperature"`
+	GridPowerR          int32     `json:"gridPowerR"`
+	TotalInverterPower  int32     `json:"totalInverterPower"`
+	AcActivePower       int32     `json:"acActivePower"`
+	LoadPowerR          int32     `json:"loadPowerR"`
+	TotalLoadPower      int32     `json:"totalLoadPower"`
+	TotalEnergyToGrid   float64   `json:"totalEnergyToGrid"`
+	DailyEnergyToGrid   float64   `json:"dailyEnergyToGrid"`
+	TotalEnergyFromGrid float64   `json:"totalEnergyFromGrid"`
+	DailyEnergyFromGrid float64   `json:"dailyEnergyFromGrid"`
+	WorkMode            int16     `json:"workMode"`
+	OperationMode       int16     `json:"operationMode"`
+	ErrorMessage        int64     `json:"errorMessage"`
+	WarningCode         int16     `json:"warningCode"`
 }

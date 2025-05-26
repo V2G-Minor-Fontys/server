@@ -18,9 +18,9 @@ VALUES ($1, $2, $3)
 `
 
 type AddControllerParams struct {
-	ID              uuid.UUID `db:"id" json:"id"`
-	CpuID           string    `db:"cpu_id" json:"cpuId"`
-	FirmwareVersion string    `db:"firmware_version" json:"firmwareVersion"`
+	ID              uuid.UUID `db:"id"`
+	CpuID           string    `db:"cpu_id"`
+	FirmwareVersion string    `db:"firmware_version"`
 }
 
 func (q *Queries) AddController(ctx context.Context, arg AddControllerParams) error {
@@ -34,9 +34,9 @@ VALUES ($1, $2, $3)
 `
 
 type AddControllerSettingsParams struct {
-	ID            uuid.UUID `db:"id" json:"id"`
-	AutoStart     bool      `db:"auto_start" json:"autoStart"`
-	HeartbeatRate int16     `db:"heartbeat_rate" json:"heartbeatRate"`
+	ID            uuid.UUID `db:"id"`
+	AutoStart     bool      `db:"auto_start"`
+	HeartbeatRate int16     `db:"heartbeat_rate"`
 }
 
 func (q *Queries) AddControllerSettings(ctx context.Context, arg AddControllerSettingsParams) error {
@@ -45,25 +45,59 @@ func (q *Queries) AddControllerSettings(ctx context.Context, arg AddControllerSe
 }
 
 const addControllerTelemetry = `-- name: AddControllerTelemetry :exec
-INSERT INTO controller_telemetry (id, controller_id, output_power, soc, ev_discharging)
-VALUES ($1, $2, $3, $4, $5)
+INSERT INTO controller_telemetry (id, controller_id, battery_voltage, battery_current, battery_power, battery_state, internal_temperature, module_temperature, radiator_temperature, grid_power_r, total_inverter_power, ac_active_power, load_power_r, total_load_power, total_energy_to_grid, daily_energy_to_grid, total_energy_from_grid, daily_energy_from_grid, work_mode, operation_mode, error_message, warning_code)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9,$10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22)
 `
 
 type AddControllerTelemetryParams struct {
-	ID            uuid.UUID   `db:"id" json:"id"`
-	ControllerID  pgtype.UUID `db:"controller_id" json:"controllerId"`
-	OutputPower   int32       `db:"output_power" json:"outputPower"`
-	Soc           int16       `db:"soc" json:"soc"`
-	EvDischarging bool        `db:"ev_discharging" json:"evDischarging"`
+	ID                  uuid.UUID   `db:"id"`
+	ControllerID        pgtype.UUID `db:"controller_id"`
+	BatteryVoltage      float64     `db:"battery_voltage"`
+	BatteryCurrent      float64     `db:"battery_current"`
+	BatteryPower        float64     `db:"battery_power"`
+	BatteryState        int16       `db:"battery_state"`
+	InternalTemperature float64     `db:"internal_temperature"`
+	ModuleTemperature   float64     `db:"module_temperature"`
+	RadiatorTemperature float64     `db:"radiator_temperature"`
+	GridPowerR          int32       `db:"grid_power_r"`
+	TotalInverterPower  int32       `db:"total_inverter_power"`
+	AcActivePower       int32       `db:"ac_active_power"`
+	LoadPowerR          int32       `db:"load_power_r"`
+	TotalLoadPower      int32       `db:"total_load_power"`
+	TotalEnergyToGrid   float64     `db:"total_energy_to_grid"`
+	DailyEnergyToGrid   float64     `db:"daily_energy_to_grid"`
+	TotalEnergyFromGrid float64     `db:"total_energy_from_grid"`
+	DailyEnergyFromGrid float64     `db:"daily_energy_from_grid"`
+	WorkMode            int16       `db:"work_mode"`
+	OperationMode       int16       `db:"operation_mode"`
+	ErrorMessage        int64       `db:"error_message"`
+	WarningCode         int16       `db:"warning_code"`
 }
 
 func (q *Queries) AddControllerTelemetry(ctx context.Context, arg AddControllerTelemetryParams) error {
 	_, err := q.db.Exec(ctx, addControllerTelemetry,
 		arg.ID,
 		arg.ControllerID,
-		arg.OutputPower,
-		arg.Soc,
-		arg.EvDischarging,
+		arg.BatteryVoltage,
+		arg.BatteryCurrent,
+		arg.BatteryPower,
+		arg.BatteryState,
+		arg.InternalTemperature,
+		arg.ModuleTemperature,
+		arg.RadiatorTemperature,
+		arg.GridPowerR,
+		arg.TotalInverterPower,
+		arg.AcActivePower,
+		arg.LoadPowerR,
+		arg.TotalLoadPower,
+		arg.TotalEnergyToGrid,
+		arg.DailyEnergyToGrid,
+		arg.TotalEnergyFromGrid,
+		arg.DailyEnergyFromGrid,
+		arg.WorkMode,
+		arg.OperationMode,
+		arg.ErrorMessage,
+		arg.WarningCode,
 	)
 	return err
 }
@@ -76,10 +110,10 @@ WHERE c.cpu_id = $1
 `
 
 type GetControllerByCpuIdRow struct {
-	ID                uuid.UUID         `db:"id" json:"id"`
-	CpuID             string            `db:"cpu_id" json:"cpuId"`
-	FirmwareVersion   string            `db:"firmware_version" json:"firmwareVersion"`
-	ControllerSetting ControllerSetting `db:"controller_setting" json:"controllerSetting"`
+	ID                uuid.UUID         `db:"id"`
+	CpuID             string            `db:"cpu_id"`
+	FirmwareVersion   string            `db:"firmware_version"`
+	ControllerSetting ControllerSetting `db:"controller_setting"`
 }
 
 func (q *Queries) GetControllerByCpuId(ctx context.Context, cpuID string) (GetControllerByCpuIdRow, error) {
@@ -98,7 +132,7 @@ func (q *Queries) GetControllerByCpuId(ctx context.Context, cpuID string) (GetCo
 }
 
 const getControllerTelemetryByControllerId = `-- name: GetControllerTelemetryByControllerId :many
-SELECT id, controller_id, timestamp, output_power, soc, ev_discharging FROM controller_telemetry
+SELECT id, controller_id, timestamp, battery_voltage, battery_current, battery_power, battery_state, internal_temperature, module_temperature, radiator_temperature, grid_power_r, total_inverter_power, ac_active_power, load_power_r, total_load_power, total_energy_to_grid, daily_energy_to_grid, total_energy_from_grid, daily_energy_from_grid, work_mode, operation_mode, error_message, warning_code FROM controller_telemetry
 WHERE controller_id = $1
 `
 
@@ -115,9 +149,26 @@ func (q *Queries) GetControllerTelemetryByControllerId(ctx context.Context, cont
 			&i.ID,
 			&i.ControllerID,
 			&i.Timestamp,
-			&i.OutputPower,
-			&i.Soc,
-			&i.EvDischarging,
+			&i.BatteryVoltage,
+			&i.BatteryCurrent,
+			&i.BatteryPower,
+			&i.BatteryState,
+			&i.InternalTemperature,
+			&i.ModuleTemperature,
+			&i.RadiatorTemperature,
+			&i.GridPowerR,
+			&i.TotalInverterPower,
+			&i.AcActivePower,
+			&i.LoadPowerR,
+			&i.TotalLoadPower,
+			&i.TotalEnergyToGrid,
+			&i.DailyEnergyToGrid,
+			&i.TotalEnergyFromGrid,
+			&i.DailyEnergyFromGrid,
+			&i.WorkMode,
+			&i.OperationMode,
+			&i.ErrorMessage,
+			&i.WarningCode,
 		); err != nil {
 			return nil, err
 		}
@@ -137,10 +188,10 @@ WHERE c.user_id = $1
 `
 
 type GetPairedControllerByUserIdRow struct {
-	ID                uuid.UUID         `db:"id" json:"id"`
-	CpuID             string            `db:"cpu_id" json:"cpuId"`
-	FirmwareVersion   string            `db:"firmware_version" json:"firmwareVersion"`
-	ControllerSetting ControllerSetting `db:"controller_setting" json:"controllerSetting"`
+	ID                uuid.UUID         `db:"id"`
+	CpuID             string            `db:"cpu_id"`
+	FirmwareVersion   string            `db:"firmware_version"`
+	ControllerSetting ControllerSetting `db:"controller_setting"`
 }
 
 func (q *Queries) GetPairedControllerByUserId(ctx context.Context, userID pgtype.UUID) (GetPairedControllerByUserIdRow, error) {
@@ -158,35 +209,41 @@ func (q *Queries) GetPairedControllerByUserId(ctx context.Context, userID pgtype
 	return i, err
 }
 
-const pairUserToController = `-- name: PairUserToController :exec
+const pairUserToController = `-- name: PairUserToController :execrows
 UPDATE controllers
 SET user_id = $2, updated_at = CURRENT_TIMESTAMP
 WHERE cpu_id = $1
 `
 
 type PairUserToControllerParams struct {
-	CpuID  string      `db:"cpu_id" json:"cpuId"`
-	UserID pgtype.UUID `db:"user_id" json:"userId"`
+	CpuID  string      `db:"cpu_id"`
+	UserID pgtype.UUID `db:"user_id"`
 }
 
-func (q *Queries) PairUserToController(ctx context.Context, arg PairUserToControllerParams) error {
-	_, err := q.db.Exec(ctx, pairUserToController, arg.CpuID, arg.UserID)
-	return err
+func (q *Queries) PairUserToController(ctx context.Context, arg PairUserToControllerParams) (int64, error) {
+	result, err := q.db.Exec(ctx, pairUserToController, arg.CpuID, arg.UserID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
 }
 
-const updateControllerSettings = `-- name: UpdateControllerSettings :exec
+const updateControllerSettings = `-- name: UpdateControllerSettings :execrows
 UPDATE controller_settings
 SET auto_start = $2, heartbeat_rate = $3, updated_at = CURRENT_TIMESTAMP
 WHERE id = $1
 `
 
 type UpdateControllerSettingsParams struct {
-	ID            uuid.UUID `db:"id" json:"id"`
-	AutoStart     bool      `db:"auto_start" json:"autoStart"`
-	HeartbeatRate int16     `db:"heartbeat_rate" json:"heartbeatRate"`
+	ID            uuid.UUID `db:"id"`
+	AutoStart     bool      `db:"auto_start"`
+	HeartbeatRate int16     `db:"heartbeat_rate"`
 }
 
-func (q *Queries) UpdateControllerSettings(ctx context.Context, arg UpdateControllerSettingsParams) error {
-	_, err := q.db.Exec(ctx, updateControllerSettings, arg.ID, arg.AutoStart, arg.HeartbeatRate)
-	return err
+func (q *Queries) UpdateControllerSettings(ctx context.Context, arg UpdateControllerSettingsParams) (int64, error) {
+	result, err := q.db.Exec(ctx, updateControllerSettings, arg.ID, arg.AutoStart, arg.HeartbeatRate)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
 }
