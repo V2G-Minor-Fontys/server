@@ -2,16 +2,18 @@ package main
 
 import (
 	"context"
-	"github.com/V2G-Minor-Fontys/server/internal/config"
-	"github.com/V2G-Minor-Fontys/server/internal/repository"
-	"github.com/V2G-Minor-Fontys/server/internal/router"
-	"github.com/V2G-Minor-Fontys/server/pkg/logger"
-	"github.com/jackc/pgx/v5/pgxpool"
 	"log/slog"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/V2G-Minor-Fontys/server/internal/config"
+	"github.com/V2G-Minor-Fontys/server/internal/repository"
+	"github.com/V2G-Minor-Fontys/server/internal/router"
+	"github.com/V2G-Minor-Fontys/server/pkg/logger"
+	"github.com/V2G-Minor-Fontys/server/pkg/migration"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 func main() {
@@ -29,6 +31,11 @@ func main() {
 	}
 
 	repo := repository.New(conn)
+	if migration.ShouldMigrateDB() {
+		migration.MigrateDB(cfg, ctx, conn)
+		return
+	}
+
 	srv := router.NewServer(cfg, conn, repo)
 	if err = srv.MountHandlers(); err != nil {
 		panic(err)
