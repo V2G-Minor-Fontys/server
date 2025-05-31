@@ -3,7 +3,6 @@ package migration
 import (
 	"context"
 	"flag"
-	"fmt"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -44,11 +43,5 @@ func MigrateDB(config *config.Config, ctx context.Context, repo repository.DBTX)
 	}
 
 	tag, _ := repo.Query(ctx, sqlUpStatement)
-	fmt.Println(tag.CommandTag().Delete())
-	fmt.Println(tag.CommandTag().RowsAffected())
 	tag.Close()
-
-	// repo.Exec(ctx, sqlUpStatement)
-
-	// psql "host=localhost port=5432 user=testUser password=TestPass1234! dbname=testDb sslmode=disable" -c (cat database/migrations/000001_create_identities_table.up.sql | tr '\n' ' ')
 }
