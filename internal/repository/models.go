@@ -5,16 +5,186 @@
 package repository
 
 import (
+	"database/sql/driver"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
+
+type ActionType string
+
+const (
+	ActionTypeRemain    ActionType = "remain"
+	ActionTypeMin       ActionType = "min"
+	ActionTypeMax       ActionType = "max"
+	ActionTypeAutomatic ActionType = "automatic"
+)
+
+func (e *ActionType) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = ActionType(s)
+	case string:
+		*e = ActionType(s)
+	default:
+		return fmt.Errorf("unsupported scan type for ActionType: %T", src)
+	}
+	return nil
+}
+
+type NullActionType struct {
+	ActionType ActionType
+	Valid      bool // Valid is true if ActionType is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullActionType) Scan(value interface{}) error {
+	if value == nil {
+		ns.ActionType, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.ActionType.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullActionType) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.ActionType), nil
+}
+
+type Ordinal string
+
+const (
+	Ordinal1st  Ordinal = "1st"
+	Ordinal2nd  Ordinal = "2nd"
+	Ordinal3rd  Ordinal = "3rd"
+	Ordinal4th  Ordinal = "4th"
+	OrdinalLast Ordinal = "last"
+)
+
+func (e *Ordinal) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = Ordinal(s)
+	case string:
+		*e = Ordinal(s)
+	default:
+		return fmt.Errorf("unsupported scan type for Ordinal: %T", src)
+	}
+	return nil
+}
+
+type NullOrdinal struct {
+	Ordinal Ordinal
+	Valid   bool // Valid is true if Ordinal is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullOrdinal) Scan(value interface{}) error {
+	if value == nil {
+		ns.Ordinal, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.Ordinal.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullOrdinal) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.Ordinal), nil
+}
+
+type Weekday string
+
+const (
+	WeekdayMon Weekday = "Mon"
+	WeekdayTue Weekday = "Tue"
+	WeekdayWed Weekday = "Wed"
+	WeekdayThu Weekday = "Thu"
+	WeekdayFri Weekday = "Fri"
+	WeekdaySat Weekday = "Sat"
+	WeekdaySun Weekday = "Sun"
+)
+
+func (e *Weekday) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = Weekday(s)
+	case string:
+		*e = Weekday(s)
+	default:
+		return fmt.Errorf("unsupported scan type for Weekday: %T", src)
+	}
+	return nil
+}
+
+type NullWeekday struct {
+	Weekday Weekday
+	Valid   bool // Valid is true if Weekday is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullWeekday) Scan(value interface{}) error {
+	if value == nil {
+		ns.Weekday, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.Weekday.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullWeekday) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.Weekday), nil
+}
+
+type Action struct {
+	ID                    uuid.UUID      `db:"id"`
+	CreatedBy             uuid.UUID      `db:"created_by"`
+	Type                  ActionType     `db:"type"`
+	BatteryCharge         pgtype.Int2    `db:"battery_charge"`
+	ChargeIfPriceBelow    pgtype.Numeric `db:"charge_if_price_below"`
+	DischargeIfPriceAbove pgtype.Numeric `db:"discharge_if_price_above"`
+}
+
+type ChargingPreference struct {
+	ID           uuid.UUID   `db:"id"`
+	Name         string      `db:"name"`
+	ActionID     uuid.UUID   `db:"action_id"`
+	CreatedBy    uuid.UUID   `db:"created_by"`
+	OccurrenceID pgtype.UUID `db:"occurrence_id"`
+	Date         pgtype.Date `db:"date"`
+	Priority     int16       `db:"priority"`
+	Enabled      bool        `db:"enabled"`
+}
 
 type Identity struct {
 	ID           uuid.UUID `db:"id"`
 	Username     string    `db:"username"`
 	PasswordHash string    `db:"password_hash"`
 	CreatedAt    time.Time `db:"created_at"`
+}
+
+type Occurrence struct {
+	ID         uuid.UUID   `db:"id"`
+	CreatedBy  uuid.UUID   `db:"created_by"`
+	Time       pgtype.Time `db:"time"`
+	Repeat     pgtype.Int4 `db:"repeat"`
+	Until      pgtype.Date `db:"until"`
+	DayOfWeek  NullWeekday `db:"day_of_week"`
+	NthOfMonth NullOrdinal `db:"nth_of_month"`
+	DayOfMonth pgtype.Int2 `db:"day_of_month"`
 }
 
 type RefreshToken struct {
