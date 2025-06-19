@@ -13,50 +13,6 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-type ActionType string
-
-const (
-	ActionTypeRemain    ActionType = "remain"
-	ActionTypeMin       ActionType = "min"
-	ActionTypeMax       ActionType = "max"
-	ActionTypeAutomatic ActionType = "automatic"
-)
-
-func (e *ActionType) Scan(src interface{}) error {
-	switch s := src.(type) {
-	case []byte:
-		*e = ActionType(s)
-	case string:
-		*e = ActionType(s)
-	default:
-		return fmt.Errorf("unsupported scan type for ActionType: %T", src)
-	}
-	return nil
-}
-
-type NullActionType struct {
-	ActionType ActionType
-	Valid      bool // Valid is true if ActionType is not NULL
-}
-
-// Scan implements the Scanner interface.
-func (ns *NullActionType) Scan(value interface{}) error {
-	if value == nil {
-		ns.ActionType, ns.Valid = "", false
-		return nil
-	}
-	ns.Valid = true
-	return ns.ActionType.Scan(value)
-}
-
-// Value implements the driver Valuer interface.
-func (ns NullActionType) Value() (driver.Value, error) {
-	if !ns.Valid {
-		return nil, nil
-	}
-	return string(ns.ActionType), nil
-}
-
 type Ordinal string
 
 const (
@@ -149,24 +105,24 @@ func (ns NullWeekday) Value() (driver.Value, error) {
 	return string(ns.Weekday), nil
 }
 
-type Action struct {
+type ChargingPolicy struct {
 	ID                    uuid.UUID      `db:"id"`
-	CreatedBy             uuid.UUID      `db:"created_by"`
-	Type                  ActionType     `db:"type"`
-	BatteryCharge         pgtype.Int2    `db:"battery_charge"`
+	MinCharge             pgtype.Int2    `db:"min_charge"`
+	MaxCharge             pgtype.Int2    `db:"max_charge"`
 	ChargeIfPriceBelow    pgtype.Numeric `db:"charge_if_price_below"`
 	DischargeIfPriceAbove pgtype.Numeric `db:"discharge_if_price_above"`
 }
 
 type ChargingPreference struct {
-	ID           uuid.UUID   `db:"id"`
-	Name         string      `db:"name"`
-	ActionID     uuid.UUID   `db:"action_id"`
-	CreatedBy    uuid.UUID   `db:"created_by"`
-	OccurrenceID pgtype.UUID `db:"occurrence_id"`
-	Date         pgtype.Date `db:"date"`
-	Priority     int16       `db:"priority"`
-	Enabled      bool        `db:"enabled"`
+	ID                  uuid.UUID   `db:"id"`
+	UserID              uuid.UUID   `db:"user_id"`
+	Name                string      `db:"name"`
+	Priority            int16       `db:"priority"`
+	Enabled             bool        `db:"enabled"`
+	ChargingPolicyID    pgtype.UUID `db:"charging_policy_id"`
+	KeepBatteryAt       pgtype.Int2 `db:"keep_battery_at"`
+	OneTimeOccurrenceID pgtype.UUID `db:"one_time_occurrence_id"`
+	RegularOccurrenceID pgtype.UUID `db:"regular_occurrence_id"`
 }
 
 type Identity struct {
@@ -176,15 +132,10 @@ type Identity struct {
 	CreatedAt    time.Time `db:"created_at"`
 }
 
-type Occurrence struct {
-	ID         uuid.UUID   `db:"id"`
-	CreatedBy  uuid.UUID   `db:"created_by"`
-	Time       pgtype.Time `db:"time"`
-	Repeat     pgtype.Int4 `db:"repeat"`
-	Until      pgtype.Date `db:"until"`
-	DayOfWeek  NullWeekday `db:"day_of_week"`
-	NthOfMonth NullOrdinal `db:"nth_of_month"`
-	DayOfMonth pgtype.Int2 `db:"day_of_month"`
+type OneTimeOccurrence struct {
+	ID        uuid.UUID   `db:"id"`
+	DateStart interface{} `db:"date_start"`
+	DateEnd   interface{} `db:"date_end"`
 }
 
 type RefreshToken struct {
@@ -192,6 +143,16 @@ type RefreshToken struct {
 	IdentityID uuid.UUID `db:"identity_id"`
 	CreatedAt  time.Time `db:"created_at"`
 	ExpiresAt  time.Time `db:"expires_at"`
+}
+
+type RegularOccurrence struct {
+	ID         uuid.UUID   `db:"id"`
+	TimeOfDay  pgtype.Time `db:"time_of_day"`
+	Repeat     pgtype.Int2 `db:"repeat"`
+	Until      pgtype.Date `db:"until"`
+	DayOfWeek  NullWeekday `db:"day_of_week"`
+	NthOfMonth NullOrdinal `db:"nth_of_month"`
+	DayOfMonth pgtype.Int2 `db:"day_of_month"`
 }
 
 type User struct {

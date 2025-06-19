@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	"github.com/V2G-Minor-Fontys/server/internal/auth"
+	"github.com/V2G-Minor-Fontys/server/internal/charging_preferences"
 	"github.com/V2G-Minor-Fontys/server/internal/config"
 	"github.com/V2G-Minor-Fontys/server/internal/middleware"
 	"github.com/V2G-Minor-Fontys/server/internal/repository"
@@ -20,17 +21,19 @@ import (
 
 type Server struct {
 	*chi.Mux
-	cfg        *config.Config
-	httpServer *http.Server
-	auth       *auth.Handler
-	user       *user.Handler
+	cfg                 *config.Config
+	httpServer          *http.Server
+	auth                *auth.Handler
+	user                *user.Handler
+	chargingPreferences *charging_preferences.Handler
 }
 
 func NewServer(cfg *config.Config, pool *pgxpool.Pool, queries *repository.Queries) *Server {
 	srv := &Server{
-		cfg:  cfg,
-		auth: auth.NewHandler(cfg.Jwt, pool, queries),
-		user: user.NewHandler(cfg.Jwt, pool, queries),
+		cfg:                 cfg,
+		auth:                auth.NewHandler(cfg.Jwt, pool, queries),
+		user:                user.NewHandler(cfg.Jwt, pool, queries),
+		chargingPreferences: charging_preferences.NewHandler(cfg.Jwt, pool, queries),
 	}
 
 	srv.httpServer = &http.Server{
@@ -63,6 +66,13 @@ func (s *Server) MountHandlers() error {
 		r.Route("/user", func(r chi.Router) {
 			r.Get("/{id}", middleware.ErrHandler(s.user.GetUserHandler))
 			r.Delete("/{id}", middleware.ErrHandler(s.user.DeleteUserHandler))
+		})
+		r.Route("/charging-preferences", func(r chi.Router) {
+			r.Get("/user/{user-id}", middleware.ErrHandler(s.chargingPreferences.GetChargingPreferencesOfUserHandler))
+			r.Get("/schema/{user-id}", middleware.ErrHandler(s.chargingPreferences.CreateChargingPreferencesSchemaHandler)) // move to mqtt component
+			r.Post("/", middleware.ErrHandler(s.chargingPreferences.CreateChargingPreferenceHandler))
+			r.Patch("/{id}", middleware.ErrHandler(s.chargingPreferences.GetChargingPreferencesOfUserHandler))
+			r.Delete("/{id}", middleware.ErrHandler(s.chargingPreferences.GetChargingPreferencesOfUserHandler))
 		})
 	})
 

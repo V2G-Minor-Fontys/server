@@ -12,30 +12,25 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const createAction = `-- name: CreateAction :exec
-INSERT INTO actions (
-  id, created_by, type, battery_charge,
-  charge_if_price_below, discharge_if_price_above
-) VALUES (
-  $1, $2, $3, $4, $5, $6
-)
+const createChargingPolicies = `-- name: CreateChargingPolicies :exec
+INSERT INTO charging_policies (
+  id, min_charge, max_charge, charge_if_price_below, discharge_if_price_above
+) VALUES ($1, $2, $3, $4, $5)
 `
 
-type CreateActionParams struct {
+type CreateChargingPoliciesParams struct {
 	ID                    uuid.UUID      `db:"id"`
-	CreatedBy             uuid.UUID      `db:"created_by"`
-	Type                  ActionType     `db:"type"`
-	BatteryCharge         pgtype.Int2    `db:"battery_charge"`
+	MinCharge             pgtype.Int2    `db:"min_charge"`
+	MaxCharge             pgtype.Int2    `db:"max_charge"`
 	ChargeIfPriceBelow    pgtype.Numeric `db:"charge_if_price_below"`
 	DischargeIfPriceAbove pgtype.Numeric `db:"discharge_if_price_above"`
 }
 
-func (q *Queries) CreateAction(ctx context.Context, arg CreateActionParams) error {
-	_, err := q.db.Exec(ctx, createAction,
+func (q *Queries) CreateChargingPolicies(ctx context.Context, arg CreateChargingPoliciesParams) error {
+	_, err := q.db.Exec(ctx, createChargingPolicies,
 		arg.ID,
-		arg.CreatedBy,
-		arg.Type,
-		arg.BatteryCharge,
+		arg.MinCharge,
+		arg.MaxCharge,
 		arg.ChargeIfPriceBelow,
 		arg.DischargeIfPriceAbove,
 	)
@@ -44,59 +39,74 @@ func (q *Queries) CreateAction(ctx context.Context, arg CreateActionParams) erro
 
 const createChargingPreference = `-- name: CreateChargingPreference :exec
 INSERT INTO charging_preferences (
-  id, created_by, name, occurrence_id, date, action_id, priority
-) VALUES (
-  $1, $2, $3, $4, $5, $6, $7
-)
+  id, user_id, name, priority, enabled, charging_policy_id, keep_battery_at, one_time_occurrence_id, regular_occurrence_id
+) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 `
 
 type CreateChargingPreferenceParams struct {
-	ID           uuid.UUID   `db:"id"`
-	CreatedBy    uuid.UUID   `db:"created_by"`
-	Name         string      `db:"name"`
-	OccurrenceID pgtype.UUID `db:"occurrence_id"`
-	Date         pgtype.Date `db:"date"`
-	ActionID     uuid.UUID   `db:"action_id"`
-	Priority     int16       `db:"priority"`
+	ID                  uuid.UUID   `db:"id"`
+	UserID              uuid.UUID   `db:"user_id"`
+	Name                string      `db:"name"`
+	Priority            int16       `db:"priority"`
+	Enabled             bool        `db:"enabled"`
+	ChargingPolicyID    pgtype.UUID `db:"charging_policy_id"`
+	KeepBatteryAt       pgtype.Int2 `db:"keep_battery_at"`
+	OneTimeOccurrenceID pgtype.UUID `db:"one_time_occurrence_id"`
+	RegularOccurrenceID pgtype.UUID `db:"regular_occurrence_id"`
 }
 
 func (q *Queries) CreateChargingPreference(ctx context.Context, arg CreateChargingPreferenceParams) error {
 	_, err := q.db.Exec(ctx, createChargingPreference,
 		arg.ID,
-		arg.CreatedBy,
+		arg.UserID,
 		arg.Name,
-		arg.OccurrenceID,
-		arg.Date,
-		arg.ActionID,
 		arg.Priority,
+		arg.Enabled,
+		arg.ChargingPolicyID,
+		arg.KeepBatteryAt,
+		arg.OneTimeOccurrenceID,
+		arg.RegularOccurrenceID,
 	)
 	return err
 }
 
-const createOccurrence = `-- name: CreateOccurrence :exec
-INSERT INTO occurrences (
-  id, created_by, time, repeat, until, day_of_week, nth_of_month, day_of_month
-) VALUES (
-  $1, $2, $3, $4, $5, $6, $7, $8
-)
+const createOneTimeOccurrence = `-- name: CreateOneTimeOccurrence :exec
+INSERT INTO one_time_occurrences (
+  id, date_start, date_end
+) VALUES ($1, $2, $3)
 `
 
-type CreateOccurrenceParams struct {
+type CreateOneTimeOccurrenceParams struct {
+	ID        uuid.UUID   `db:"id"`
+	DateStart interface{} `db:"date_start"`
+	DateEnd   interface{} `db:"date_end"`
+}
+
+func (q *Queries) CreateOneTimeOccurrence(ctx context.Context, arg CreateOneTimeOccurrenceParams) error {
+	_, err := q.db.Exec(ctx, createOneTimeOccurrence, arg.ID, arg.DateStart, arg.DateEnd)
+	return err
+}
+
+const createRegularOccurrence = `-- name: CreateRegularOccurrence :exec
+INSERT INTO regular_occurrences (
+  id,  time_of_day, repeat, until, day_of_week, nth_of_month, day_of_month
+) VALUES ($1, $2, $3, $4, $5, $6, $7)
+`
+
+type CreateRegularOccurrenceParams struct {
 	ID         uuid.UUID   `db:"id"`
-	CreatedBy  uuid.UUID   `db:"created_by"`
-	Time       pgtype.Time `db:"time"`
-	Repeat     pgtype.Int4 `db:"repeat"`
+	TimeOfDay  pgtype.Time `db:"time_of_day"`
+	Repeat     pgtype.Int2 `db:"repeat"`
 	Until      pgtype.Date `db:"until"`
 	DayOfWeek  NullWeekday `db:"day_of_week"`
 	NthOfMonth NullOrdinal `db:"nth_of_month"`
 	DayOfMonth pgtype.Int2 `db:"day_of_month"`
 }
 
-func (q *Queries) CreateOccurrence(ctx context.Context, arg CreateOccurrenceParams) error {
-	_, err := q.db.Exec(ctx, createOccurrence,
+func (q *Queries) CreateRegularOccurrence(ctx context.Context, arg CreateRegularOccurrenceParams) error {
+	_, err := q.db.Exec(ctx, createRegularOccurrence,
 		arg.ID,
-		arg.CreatedBy,
-		arg.Time,
+		arg.TimeOfDay,
 		arg.Repeat,
 		arg.Until,
 		arg.DayOfWeek,
@@ -106,13 +116,13 @@ func (q *Queries) CreateOccurrence(ctx context.Context, arg CreateOccurrencePara
 	return err
 }
 
-const deleteAction = `-- name: DeleteAction :exec
-DELETE FROM actions
+const deleteChargingPolicies = `-- name: DeleteChargingPolicies :exec
+DELETE FROM charging_policies
 WHERE id = $1
 `
 
-func (q *Queries) DeleteAction(ctx context.Context, id uuid.UUID) error {
-	_, err := q.db.Exec(ctx, deleteAction, id)
+func (q *Queries) DeleteChargingPolicies(ctx context.Context, id uuid.UUID) error {
+	_, err := q.db.Exec(ctx, deleteChargingPolicies, id)
 	return err
 }
 
@@ -126,150 +136,74 @@ func (q *Queries) DeleteChargingPreference(ctx context.Context, id uuid.UUID) er
 	return err
 }
 
-const deleteOccurrence = `-- name: DeleteOccurrence :exec
-DELETE FROM occurrences
+const deleteOneTimeOccurrence = `-- name: DeleteOneTimeOccurrence :exec
+DELETE FROM one_time_occurrences
 WHERE id = $1
 `
 
-func (q *Queries) DeleteOccurrence(ctx context.Context, id uuid.UUID) error {
-	_, err := q.db.Exec(ctx, deleteOccurrence, id)
+func (q *Queries) DeleteOneTimeOccurrence(ctx context.Context, id uuid.UUID) error {
+	_, err := q.db.Exec(ctx, deleteOneTimeOccurrence, id)
 	return err
 }
 
-const getChargingPreferencesByUserId = `-- name: GetChargingPreferencesByUserId :one
-SELECT
-  p.id AS preference_id,
-  p.name,
-  o.time,
-  o.day_of_week,
-  o.nth_of_month,
-  o.day_of_month,
-  o.repeat,
-  o.until,
-  a.type AS action_type,
-  a.battery_charge,
-  a.charge_if_price_below,
-  a.discharge_if_price_above,
-  p.priority,
-  p.enabled
-FROM charging_preferences p
-LEFT JOIN occurrences o ON p.occurrence_id = o.id
-JOIN actions a ON p.action_id = a.id
-WHERE p.id = $1
+const deleteRegularOccurrences = `-- name: DeleteRegularOccurrences :exec
+DELETE FROM regular_occurrences
+WHERE id = $1
 `
 
-type GetChargingPreferencesByUserIdRow struct {
-	PreferenceID          uuid.UUID      `db:"preference_id"`
-	Name                  string         `db:"name"`
-	Time                  pgtype.Time    `db:"time"`
-	DayOfWeek             NullWeekday    `db:"day_of_week"`
-	NthOfMonth            NullOrdinal    `db:"nth_of_month"`
-	DayOfMonth            pgtype.Int2    `db:"day_of_month"`
-	Repeat                pgtype.Int4    `db:"repeat"`
-	Until                 pgtype.Date    `db:"until"`
-	ActionType            ActionType     `db:"action_type"`
-	BatteryCharge         pgtype.Int2    `db:"battery_charge"`
-	ChargeIfPriceBelow    pgtype.Numeric `db:"charge_if_price_below"`
-	DischargeIfPriceAbove pgtype.Numeric `db:"discharge_if_price_above"`
-	Priority              int16          `db:"priority"`
-	Enabled               bool           `db:"enabled"`
-}
-
-func (q *Queries) GetChargingPreferencesByUserId(ctx context.Context, id uuid.UUID) (GetChargingPreferencesByUserIdRow, error) {
-	row := q.db.QueryRow(ctx, getChargingPreferencesByUserId, id)
-	var i GetChargingPreferencesByUserIdRow
-	err := row.Scan(
-		&i.PreferenceID,
-		&i.Name,
-		&i.Time,
-		&i.DayOfWeek,
-		&i.NthOfMonth,
-		&i.DayOfMonth,
-		&i.Repeat,
-		&i.Until,
-		&i.ActionType,
-		&i.BatteryCharge,
-		&i.ChargeIfPriceBelow,
-		&i.DischargeIfPriceAbove,
-		&i.Priority,
-		&i.Enabled,
-	)
-	return i, err
-}
-
-const listActionsForUser = `-- name: ListActionsForUser :many
-SELECT id, created_by, type, battery_charge, charge_if_price_below, discharge_if_price_above FROM actions
-WHERE created_by = $1
-`
-
-func (q *Queries) ListActionsForUser(ctx context.Context, createdBy uuid.UUID) ([]Action, error) {
-	rows, err := q.db.Query(ctx, listActionsForUser, createdBy)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []Action
-	for rows.Next() {
-		var i Action
-		if err := rows.Scan(
-			&i.ID,
-			&i.CreatedBy,
-			&i.Type,
-			&i.BatteryCharge,
-			&i.ChargeIfPriceBelow,
-			&i.DischargeIfPriceAbove,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
+func (q *Queries) DeleteRegularOccurrences(ctx context.Context, id uuid.UUID) error {
+	_, err := q.db.Exec(ctx, deleteRegularOccurrences, id)
+	return err
 }
 
 const listChargingPreferencesForUser = `-- name: ListChargingPreferencesForUser :many
 SELECT
   p.id AS preference_id,
+  p.user_id,
   p.name,
-  o.time,
-  o.day_of_week,
-  o.nth_of_month,
-  o.day_of_month,
-  o.repeat,
-  o.until,
-  a.type AS action_type,
-  a.battery_charge,
-  a.charge_if_price_below,
-  a.discharge_if_price_above,
   p.priority,
-  p.enabled
+  p.enabled,
+  oo.date_start,
+  oo.date_end,
+  ro.time_of_day,
+  ro.day_of_week,
+  ro.nth_of_month,
+  ro.day_of_month,
+  ro.repeat,
+  ro.until,
+  cp.min_charge,
+  cp.max_charge,
+  cp.charge_if_price_below,
+  cp.discharge_if_price_above
 FROM charging_preferences p
-LEFT JOIN occurrences o ON p.occurrence_id = o.id
-JOIN actions a ON p.action_id = a.id
-WHERE p.created_by = $1
+LEFT JOIN regular_occurrences ro ON p.regular_occurrence_id = ro.id
+LEFT JOIN one_time_occurrences oo ON p.one_time_occurrence_id = oo.id
+LEFT JOIN charging_policies cp ON p.charging_policy_id = cp.id
+WHERE p.user_id = $1
 `
 
 type ListChargingPreferencesForUserRow struct {
 	PreferenceID          uuid.UUID      `db:"preference_id"`
+	UserID                uuid.UUID      `db:"user_id"`
 	Name                  string         `db:"name"`
-	Time                  pgtype.Time    `db:"time"`
+	Priority              int16          `db:"priority"`
+	Enabled               bool           `db:"enabled"`
+	DateStart             interface{}    `db:"date_start"`
+	DateEnd               interface{}    `db:"date_end"`
+	TimeOfDay             pgtype.Time    `db:"time_of_day"`
 	DayOfWeek             NullWeekday    `db:"day_of_week"`
 	NthOfMonth            NullOrdinal    `db:"nth_of_month"`
 	DayOfMonth            pgtype.Int2    `db:"day_of_month"`
-	Repeat                pgtype.Int4    `db:"repeat"`
+	Repeat                pgtype.Int2    `db:"repeat"`
 	Until                 pgtype.Date    `db:"until"`
-	ActionType            ActionType     `db:"action_type"`
-	BatteryCharge         pgtype.Int2    `db:"battery_charge"`
+	MinCharge             pgtype.Int2    `db:"min_charge"`
+	MaxCharge             pgtype.Int2    `db:"max_charge"`
 	ChargeIfPriceBelow    pgtype.Numeric `db:"charge_if_price_below"`
 	DischargeIfPriceAbove pgtype.Numeric `db:"discharge_if_price_above"`
-	Priority              int16          `db:"priority"`
-	Enabled               bool           `db:"enabled"`
 }
 
-func (q *Queries) ListChargingPreferencesForUser(ctx context.Context, createdBy uuid.UUID) ([]ListChargingPreferencesForUserRow, error) {
-	rows, err := q.db.Query(ctx, listChargingPreferencesForUser, createdBy)
+func (q *Queries) ListChargingPreferencesForUser(ctx context.Context, userID uuid.UUID) ([]ListChargingPreferencesForUserRow, error) {
+	rows, err := q.db.Query(ctx, listChargingPreferencesForUser, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -279,53 +213,22 @@ func (q *Queries) ListChargingPreferencesForUser(ctx context.Context, createdBy 
 		var i ListChargingPreferencesForUserRow
 		if err := rows.Scan(
 			&i.PreferenceID,
+			&i.UserID,
 			&i.Name,
-			&i.Time,
-			&i.DayOfWeek,
-			&i.NthOfMonth,
-			&i.DayOfMonth,
-			&i.Repeat,
-			&i.Until,
-			&i.ActionType,
-			&i.BatteryCharge,
-			&i.ChargeIfPriceBelow,
-			&i.DischargeIfPriceAbove,
 			&i.Priority,
 			&i.Enabled,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const listOccurrencesForUser = `-- name: ListOccurrencesForUser :many
-SELECT id, created_by, time, repeat, until, day_of_week, nth_of_month, day_of_month FROM occurrences
-WHERE created_by = $1
-`
-
-func (q *Queries) ListOccurrencesForUser(ctx context.Context, createdBy uuid.UUID) ([]Occurrence, error) {
-	rows, err := q.db.Query(ctx, listOccurrencesForUser, createdBy)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []Occurrence
-	for rows.Next() {
-		var i Occurrence
-		if err := rows.Scan(
-			&i.ID,
-			&i.CreatedBy,
-			&i.Time,
-			&i.Repeat,
-			&i.Until,
+			&i.DateStart,
+			&i.DateEnd,
+			&i.TimeOfDay,
 			&i.DayOfWeek,
 			&i.NthOfMonth,
 			&i.DayOfMonth,
+			&i.Repeat,
+			&i.Until,
+			&i.MinCharge,
+			&i.MaxCharge,
+			&i.ChargeIfPriceBelow,
+			&i.DischargeIfPriceAbove,
 		); err != nil {
 			return nil, err
 		}
