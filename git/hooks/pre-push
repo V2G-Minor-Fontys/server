@@ -1,0 +1,23 @@
+#!/bin/sh
+
+# Run Go tests
+echo "Running Go tests..."
+if ! go test ./...; then
+  echo "Tests failed! Push aborted."
+  exit 1
+fi
+
+# Build Docker image
+IMAGE_NAME="alexpopov33/v2g:latest"
+echo "Building Docker image $IMAGE_NAME ..."
+docker build -t "$IMAGE_NAME" .
+
+# Push Docker image
+echo "Pushing Docker image to Docker Hub..."
+docker push "$IMAGE_NAME" || {
+  echo "Docker push failed! Push aborted."
+  exit 1
+}
+
+echo "All checks passed. Proceeding with git push."
+exit 0

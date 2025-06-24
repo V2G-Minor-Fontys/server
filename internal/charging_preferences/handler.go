@@ -47,9 +47,6 @@ func (h *Handler) CreateChargingPreferenceHandler(w http.ResponseWriter, r *http
 		return httpx.BadRequest(ctx, "Could not parse JSON body")
 	}
 
-	a, _ := json.MarshalIndent(req, "", "  ")
-	println(string(a))
-
 	preferenceParams := repository.CreateChargingPreferenceParams{
 		ID:       uuid.New(),
 		UserID:   req.UserId,
