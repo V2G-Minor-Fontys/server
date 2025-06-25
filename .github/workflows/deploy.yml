@@ -2,7 +2,7 @@ name: "Server Deployment"
 on:
   push:
     branches:
-      - automatic-charging
+      - feature/deployment
 defaults:
   run:
     shell: bash
