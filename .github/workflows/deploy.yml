@@ -21,7 +21,7 @@ jobs:
           go mod verify
       - name: Run tests
         run: go test -v ./tests
-  build-docker:
+  docker:
     needs: test
     runs-on: ubuntu-latest
     steps:
@@ -33,13 +33,25 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - uses: docker/setup-buildx-action@v3
       - name: Build Docker image
         run: |
           docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/automatic-charging:latest .
-  deploy-to-docker-hub:
-    needs: build-docker
-    runs-on: ubuntu-latest
-    steps:
       - name: Push image to Docker Hub
         run: |
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/automatic-charging:latest
+  deploy:
+    needs: docker
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Deploy to Render"
+        run: |
+          curl --request POST\
+          --url https://api.render.com/v1/services/${{ secrets.RENDER_SERVICE_ID }}/deploys \
+              --header 'accept: application/json' \
+              --header 'authorization: Bearer ${{ secrets.RENDER_TOKEN }}' \
+              --header 'content-type: application/json' \
+              --data '{
+            "clearCache": "do_not_clear",
+            "imageUrl": "${{ secrets.DOCKERHUB_USERNAME }}/automatic-charging:latest",
+          }'
